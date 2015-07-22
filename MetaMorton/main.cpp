@@ -8,8 +8,16 @@
 
 #include <iostream>
 
+#include "array_builder.h"
+
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
+
+    const int range = 256;
+
+    for (int i = 0; i < range; i++) {
+        printf("Value:%d\n", Array<range>::Value[i]);
+    }
+
+
     return 0;
 }

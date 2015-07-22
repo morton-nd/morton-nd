@@ -25,6 +25,8 @@
 /* Begin PBXFileReference section */
 		0A10FA4F1A9C0E7700F13B87 /* MetaMorton */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MetaMorton; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A10FA521A9C0E7700F13B87 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		0A10FA591A9C0F1100F13B87 /* mortoncode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mortoncode.h; sourceTree = "<group>"; };
+		0A10FA5A1AA0044B00F13B87 /* array_builder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = array_builder.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,8 @@
 			isa = PBXGroup;
 			children = (
 				0A10FA521A9C0E7700F13B87 /* main.cpp */,
+				0A10FA591A9C0F1100F13B87 /* mortoncode.h */,
+				0A10FA5A1AA0044B00F13B87 /* array_builder.h */,
 			);
 			path = MetaMorton;
 			sourceTree = "<group>";
@@ -232,6 +236,7 @@
 				0A10FA581A9C0E7700F13B87 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
