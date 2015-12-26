@@ -12,12 +12,17 @@
 
 int main(int argc, const char * argv[]) {
 
-    const int range = 256;
+//    const int range = 256;
+//
+//    for (int i = 0; i < range; i++) {
+//        printf("Value:%d\n", Array<range>::Value[i]);
+//    }
 
-    for (int i = 0; i < range; i++) {
-        printf("Value:%d\n", Array<range>::Value[i]);
-    }
 
+    Member<3, 1 << 3> test;
+    
+    printf("Value:%d\n", test.array[1]);
+    
 
     return 0;
 }

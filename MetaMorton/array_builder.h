@@ -1,3 +1,4 @@
+#include <array>
 //
 //  array_builder.h
 //  MetaMorton
@@ -25,5 +26,30 @@ struct Array<0, Rest...> {
 
 template<int... Rest>
 constexpr int Array<0, Rest...>::Value[];
+
+
+
+
+template<int N, int V>
+struct Member {
+    struct Values {
+        const Member<(N >> 1), V - (1 << (N-1))> v1;
+        const Member<(N >> 1), V> v2;
+
+        Values() : v1(), v2() {}
+    };
+
+    const union {
+        const Values values;
+        const std::array<uint, 1 << N> array;
+    };
+
+    Member() : values() { }
+};
+
+template<int V>
+struct Member<0, V> {
+    const uint Value = V;
+};
 
 #endif
