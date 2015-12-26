@@ -33,8 +33,8 @@ constexpr int Array<0, Rest...>::Value[];
 template<int N, int V>
 struct Member {
     struct Values {
-        const Member<(N >> 1), V - (1 << (N-1))> v1;
-        const Member<(N >> 1), V> v2;
+        const Member<(N - 1), V - (1 << (N - 1))> v1;
+        const Member<(N - 1), V> v2;
 
         Values() : v1(), v2() {}
     };
@@ -49,7 +49,8 @@ struct Member {
 
 template<int V>
 struct Member<0, V> {
-    const uint Value = V;
+    const uint Value = GetN(V);
 };
+
 
 #endif

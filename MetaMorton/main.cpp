@@ -19,7 +19,7 @@ int main(int argc, const char * argv[]) {
 //    }
 
 
-    Member<3, 1 << 3> test;
+    Member<6, 1 << 6> test;
     
     printf("Value:%d\n", test.array[1]);
     
