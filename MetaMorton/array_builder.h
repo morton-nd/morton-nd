@@ -10,9 +10,6 @@
 #ifndef MetaMorton_array_builder_h
 #define MetaMorton_array_builder_h
 
-//int constexpr GetN(int index) {
-//    return index;
-//}
 
 template<class T, int Size>
 union ArrayCombiner {
@@ -33,6 +30,8 @@ ArrayCombiner<int, (Size * 2)> constexpr GetN(int index) {
     //return static_cast<std::array<int, 2>>((std::array<std::array<int, 2>, 2>){GetN(index), GetN(index)}) ;
 }
 
+
+const char storage[128];
 
 constexpr std::array<int, 4> combined = ArrayCombiner<int, 2>({ 1, 2 }, { 1, 2 }).combined;
 
