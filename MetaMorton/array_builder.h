@@ -11,17 +11,18 @@
 #define MetaMorton_array_builder_h
 
 
+
+
+
+
 template<class T, int Size>
-union ArrayCombiner {
-    const struct Inner {
-        const std::array<T, Size> array1;
-        const std::array<T, Size> array2;
+struct ArrayCombiner {
+    const std::array<T, Size>& array1;
+    const std::array<T, Size>& array2;
 
-        constexpr Inner(std::array<T, Size> arr1, std::array<T, Size> arr2) : array1(arr1), array2(arr2) { }
-    } arrays;
-    const std::array<T, Size * 2> combined;
-
-    constexpr ArrayCombiner(std::array<T, Size> arr1, std::array<T, Size> arr2) : arrays(arr1, arr2) { }
+    constexpr ArrayCombiner(const std::array<T, Size>& arr1, const std::array<T, Size>& arr2) : array1(arr1), array2(arr2) { }
+    
+    static constexpr std::array<T, Size * 2>& combined = std::array<T, Size * 2> { array1[std::make_index_sequence<sizeof(array1)>()]... }
 };
 
 template<int Size>
@@ -31,9 +32,9 @@ ArrayCombiner<int, (Size * 2)> constexpr GetN(int index) {
 }
 
 
-const char storage[128];
+//const char storage[128];
 
-constexpr std::array<int, 4> combined = ArrayCombiner<int, 2>({ 1, 2 }, { 1, 2 }).combined;
+constexpr std::array<int, 4> combined = ArrayCombiner<int, 2>({ 1, 2 }, { 1, 2 }).arrays;
 
 
 

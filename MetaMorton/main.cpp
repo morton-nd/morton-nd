@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "array_builder.h"
+#include "mortoncode.h"
 
 int main(int argc, const char * argv[]) {
 
@@ -18,11 +18,17 @@ int main(int argc, const char * argv[]) {
 //        printf("Value:%d\n", Array<range>::Value[i]);
 //    }
 
+    auto& morton = Morton<3, 8, uint32_t, uint32_t>;
 
-    Member<6, 1 << 6> test;
+    //MortonCode<3, 8, uint8_t, uint32_t> morton;
+    //using MyMorton = Morton<3, 8, uint32_t, uint32_t>;
     
-    printf("Value:%d\n", test.array[1]);
-    
-
+    for (int i = 0; i < 256; i++) {
+        uint32_t split = morton.LookupTable[i];
+        
+        //Member<6, 1 << 6> test;
+        //printf("Value:%d\n", test.array[1]);
+        printf("Value:0x%2x\n", split);
+    }
     return 0;
 }
