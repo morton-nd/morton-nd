@@ -11,6 +11,7 @@
 
 #include <cmath>
 #include <array>
+#include <tuple>
 
 /**
  * @param Bits the number of bits, starting with the LSB to include in the code
@@ -23,24 +24,41 @@ class MortonCode
 
 public:
     constexpr MortonCode(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
-    
-    OutputType Encode(InputType x, InputType y, InputType z)
-    {
 
+    template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
+    constexpr OutputType Encode(InputType field1, Args... fields) const
+    {
+        return EncodeInternal(field1, fields...);
+    }
+
+    constexpr auto Decode(OutputType value) {
 
     }
-    
+
+private:
+
+    template<typename...Args>
+    constexpr OutputType EncodeInternal(InputType field1, Args... fields) const
+    {
+        return EncodeInternal(fields...) << 1 | LookupTable[field1];
+    }
+
+    constexpr OutputType EncodeInternal(InputType field) const
+    {
+        return LookupTable[field];
+    }
+
     static constexpr InputType Split1ByN(InputType input, size_t bitsRemaining = Bits) {
         static_assert(Fields > 0, "Field parameter (# fields) must be > 0");
-        
+
         return (bitsRemaining == 0) ? input : (Split1ByN(input >> 1, bitsRemaining - 1) << Fields) | (input & 1);
     }
-    
+
     template<size_t... i>
     static constexpr auto BuildLut(std::index_sequence<i...>) {
         return std::array<InputType, sizeof...(i)>{{Split1ByN(i)...}};
     }
-    
+
     static constexpr size_t pow(size_t base, size_t exp) {
         return exp == 0 ? 1 : base * pow(base, exp - 1);
     }
@@ -49,18 +67,7 @@ public:
         return pow(2, Bits);
     }
 
-//private:
     const std::array<InputType, LutSize()> LookupTable;
-
-//    constexpr InputType Mask(int index) const {
-//        return index == 0
-//            ? ~(((InputType)-1) >> (sizeof(InputType) * 8 - Bits))
-//            : Mask(index - 1)
-//    }
-
-    
-
-
 };
 
 template<std::size_t Fields, std::size_t Bits, typename InputType, typename OutputType>
