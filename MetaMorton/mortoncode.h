@@ -12,13 +12,20 @@
 #include <cmath>
 #include <array>
 #include <tuple>
+#include <type_traits>
+#include <limits>
 
 /**
- * @param Bits the number of bits, starting with the LSB to include in the code
+ * @param Bits the number of bits, starting with the LSb to include in the code
  * @param InputType the type of the components to encode/decode
  * @param OutputType the type of the code
  */
-template<std::size_t Fields, std::size_t Bits, typename InputType, typename OutputType>
+template<std::size_t Fields, std::size_t Bits,
+    typename InputType = typename std::conditional<(Bits <= std::numeric_limits<uint8_t>::digits), uint8_t,
+                             typename std::conditional<(Bits <= std::numeric_limits<uint16_t>::digits), uint16_t,
+                                 typename std::conditional<(Bits <= std::numeric_limits<uint32_t>::digits), uint32_t,
+                                     typename std::conditional<(Bits <= std::numeric_limits<uint64_t>::digits), uint64_t, void()>::type>::type>::type>::type,
+    typename OutputType = InputType>
 class MortonCode
 {
 
@@ -69,8 +76,5 @@ private:
 
     const std::array<InputType, LutSize()> LookupTable;
 };
-
-template<std::size_t Fields, std::size_t Bits, typename InputType, typename OutputType>
-constexpr auto Morton = MortonCode<Fields, Bits, InputType, OutputType>();
 
 #endif
