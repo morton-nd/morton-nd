@@ -10,14 +10,16 @@
 
 #include "mortoncode.h"
 
-auto& morton = Morton<3, 4, uint32_t, uint32_t>;
-const auto test = morton.Encode(5, 9, 1);
+constexpr auto Morton = MortonCode<3, 26, uint64_t , uint64_t >();
+
+const auto test = Morton.Encode(5, 9, 1);
 
 int main(int argc, const char * argv[]) {
+    printf("Encoding of (5, 9, 1): %d\n", test);
 
-    //MortonCode<3, 8, uint8_t, uint32_t> morton;
-    //using MyMorton = Morton<3, 8, uint32_t, uint32_t>
-    printf("Encoding of (1, 2, 3): %d\n", test);
+    for (int i = 0; i < 50; ++i) {
+        printf("Morton Encoding of (%d %d %d): %d\n", i, i+1, i+2, Morton.Encode(i, i + 1, i + 2));
+    }
 
     return 0;
 }
