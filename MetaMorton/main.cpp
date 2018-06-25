@@ -10,7 +10,7 @@
 
 #include "mortoncode.h"
 
-constexpr auto Morton = MortonCode<3, 26, uint64_t , uint64_t >();
+constexpr auto Morton = MortonCode<3, 2, 8, uint64_t , uint64_t >();
 
 const auto test = Morton.Encode(5, 9, 1);
 
