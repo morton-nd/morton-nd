@@ -26,8 +26,7 @@ using built_in_t =
  * @param Fields the number of fields (components) to encode/decode
  * @param Chunks the number of chunks per field
  * @param Bits the number of bits per chunk
- * @param InputType the type of the components to encode/decode
- * @param OutputType the type of the code
+ * @param T the type of the components to encode/decode, as well as the type of the result
  */
 template<std::size_t Fields, std::size_t Chunks, std::size_t Bits, typename T = built_in_t<Fields * Chunks * Bits>>
 class MortonCode
@@ -58,26 +57,26 @@ private:
     }
 
     template <typename Arg, typename...Args>
-    constexpr auto LookupField(T field, Arg arg, Args... args) const
+    constexpr auto LookupField(T field, Arg, Args... args) const
     {
         return (LookupField(field >> Bits, args...) << (Fields * Bits)) | LookupTable[field & ChunkMask];
     }
 
     template <typename Arg>
-    constexpr auto LookupField(T field, Arg arg) const
+    constexpr auto LookupField(T field, Arg) const
     {
         return LookupTable[field & ChunkMask]; // TODO: no need to mask here assuming clean input
     }
 
-    static constexpr lut_entry_t Split1ByN(lut_entry_t input, size_t bitsRemaining = Bits) {
+    static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = Bits) {
         static_assert(Fields > 0, "Field parameter (# fields) must be > 0");
 
-        return (bitsRemaining == 0) ? input : (Split1ByN(input >> 1, bitsRemaining - 1) << Fields) | (input & 1);
+        return (bitsRemaining == 0) ? input : (SplitByN(input >> 1, bitsRemaining - 1) << Fields) | (input & 1);
     }
 
     template<size_t... i>
     static constexpr auto BuildLut(std::index_sequence<i...>) {
-        return std::array<lut_entry_t, sizeof...(i)>{{Split1ByN(i)...}};
+        return std::array<lut_entry_t, sizeof...(i)>{{SplitByN(i)...}};
     }
 
     static constexpr size_t pow(size_t base, size_t exp) {
@@ -89,7 +88,7 @@ private:
     }
 
     const std::array<lut_entry_t, LutSize()> LookupTable;
-    const lut_entry_t ChunkMask = (1 << Bits) - 1;
+    const lut_entry_t ChunkMask = ((lut_entry_t)1 << Bits) - 1;
 };
 
 #endif
