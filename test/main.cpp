@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "mortoncode.h"
+#include "../morton-nd/include/mortoncode.h"
 
 constexpr auto Morton = MortonCode<3, 2, 8>();
 
