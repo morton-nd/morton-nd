@@ -7,4 +7,4 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(morton-nd
         main.cpp
-        ../morton-nd/include/mortoncode.h)
+        ../morton-nd/include/mortonND_encoder.h)

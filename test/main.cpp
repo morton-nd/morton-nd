@@ -8,9 +8,9 @@
 
 #include <iostream>
 
-#include "../morton-nd/include/mortoncode.h"
+#include "../morton-nd/include/mortonND_encoder.h"
 
-constexpr auto Morton = MortonCode<3, 2, 8>();
+constexpr auto Morton = mortonnd::MortonNDEncoder<3, 1, 17>();
 
 const auto test = Morton.Encode(5, 9, 1);
 

@@ -1,19 +1,21 @@
 //
-//  mortoncode.h
-//  MetaMorton
+//  mortonND_encoder.h
+//  morton-nd
 //
 //  Created by Kevin Hartman on 2/23/15.
 //  Copyright (c) 2015 Kevin Hartman. All rights reserved.
 //
 
-#ifndef MetaMorton_mortoncode_h
-#define MetaMorton_mortoncode_h
+#ifndef mortonND_encoder_h
+#define mortonND_encoder_h
 
 #include <cmath>
 #include <array>
 #include <tuple>
 #include <type_traits>
 #include <limits>
+
+namespace mortonnd{
 
 template<size_t Size, typename Default = void()>
 using built_in_t =
@@ -29,14 +31,14 @@ using built_in_t =
  * @param T the type of the components to encode/decode, as well as the type of the result
  */
 template<std::size_t Fields, std::size_t Chunks, std::size_t Bits, typename T = built_in_t<Fields * Chunks * Bits>>
-class MortonCode
+class MortonNDEncoder
 {
     // LUT entry size is always Fields * Bits. If no suitable built-in type can hold the entry, the user-specified field
     // type will be used (if provided).
     using lut_entry_t = built_in_t<Fields * Bits, T>;
 
 public:
-    constexpr MortonCode(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
+    constexpr MortonNDEncoder(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
 
     template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
     constexpr T Encode(T field1, Args... fields) const
@@ -90,5 +92,5 @@ private:
     const std::array<lut_entry_t, LutSize()> LookupTable;
     const lut_entry_t ChunkMask = ((lut_entry_t)1 << Bits) - 1;
 };
-
+} // namespace mortonnd
 #endif
