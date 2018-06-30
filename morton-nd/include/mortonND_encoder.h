@@ -22,7 +22,8 @@ using built_in_t =
     typename std::conditional<(Size <= std::numeric_limits<uint8_t>::digits), uint8_t,
         typename std::conditional<(Size <= std::numeric_limits<uint16_t>::digits), uint16_t,
             typename std::conditional<(Size <= std::numeric_limits<uint32_t>::digits), uint32_t,
-                typename std::conditional<(Size <= std::numeric_limits<uint64_t>::digits), uint64_t, Default>::type>::type>::type>::type;
+                typename std::conditional<(Size <= std::numeric_limits<uint64_t>::digits), uint64_t, Default>
+                    ::type>::type>::type>::type;
 
 /**
  * @param Fields the number of fields (components) to encode/decode
@@ -73,7 +74,9 @@ private:
     static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = Bits) {
         static_assert(Fields > 0, "Field parameter (# fields) must be > 0");
 
-        return (bitsRemaining == 0) ? input : (SplitByN(input >> 1, bitsRemaining - 1) << Fields) | (input & 1);
+        return (bitsRemaining == 0)
+            ? input
+            : (SplitByN(input >> 1, bitsRemaining - 1) << Fields) | (input & (lut_entry_t)1);
     }
 
     template<size_t... i>
