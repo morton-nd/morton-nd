@@ -59,16 +59,20 @@ private:
         return LookupField(field, std::make_index_sequence<Chunks>{});
     }
 
-    template <typename Arg, typename...Args>
-    constexpr auto LookupField(T field, Arg, Args... args) const
+    template <size_t ...I>
+    constexpr T LookupField(T field, std::index_sequence<I...>) const {
+        return LookupField(field, I...);
+    }
+
+    template <typename ...Args>
+    constexpr T LookupField(T field, size_t, Args... args) const
     {
         return (LookupField(field >> Bits, args...) << (Fields * Bits)) | LookupTable[field & ChunkMask];
     }
 
-    template <typename Arg>
-    constexpr auto LookupField(T field, Arg) const
+    constexpr T LookupField(T field, size_t) const
     {
-        return LookupTable[field & ChunkMask]; // TODO: no need to mask here assuming clean input
+        return LookupTable[field & ChunkMask];
     }
 
     static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = Bits) {
@@ -93,7 +97,7 @@ private:
     }
 
     const std::array<lut_entry_t, LutSize()> LookupTable;
-    const lut_entry_t ChunkMask = ((lut_entry_t)1 << Bits) - 1;
+    const T ChunkMask = ((T)1 << Bits) - 1;
 };
 } // namespace mortonnd
 #endif
