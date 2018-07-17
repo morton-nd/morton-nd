@@ -8,7 +8,7 @@ The MortonNDEncoder class encapsulates a LUT and provides a corresponding encode
 
 Field size in bits is calculated as the number of chunks multiplied by the size of each chunk in bits (chunks * chunk size).
 
-### Example: 2D encoding
+### Example: 2D encoding (N = 2)
 For a 2 field encoder, where the result must fit in a 32-bit field, the max field size is 16 bits (32 bits / 2 fields).
 
 Therefore, to create a suitable MortonNDEncoder, you must parameterize it such that chunks * bits per chunk = 16:
@@ -34,4 +34,38 @@ The encode function is variadic, but will assert that exactly 2 fields are speci
 auto encoding = MortonND_2D_32.Encode(9, 5);
 ```
 
-If targeting a 64-bit result, the max field size is 32 bits (64 bits / 2 fields). However, in this case, the max chunk size is still 16 (not 32). This is due to compiler limitations which prevent a LUT of size 2^32 from being generated (which would be greater than 17 GB in size anyway – likely impractical). See the notes section below on various compiler limitations.
+<blockquote>
+<b>Note:</b></p>
+If targeting a 2D 64-bit result, the max field size is 32 bits (64 bits / 2 fields). However, in this case, the max chunk size is still 16 (not 32). This is due to compiler limitations which prevent a LUT of size 2^32 from being generated (which would be greater than 17 GB in size anyway – likely impractical). See the notes section below on various compiler limitations.
+</blockquote>
+
+### Example: 3D encoding (N = 3)
+For a 3 field encoder, where the result must fit in a 64 bit field, the max size of each field is 21 bits (⌊64 bits / 3 fields⌋).
+
+To create a suitable MortonNDEncoder, parameterize it such that chunks * bits per chunk = 21:
+
+```c++
+// 1) 1 chunk, 21 bits. LUT size is 2^21 entries * 8 bytes per entry = 16.777216 MB
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 1, 21>();
+
+// 2) 3 chunks, 7 bits. LUT size is 2^7 entries * 4 bytes per entry = 512 bytes
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 3, 7>();
+```
+
+As is the case in 2D, the larger table (while fairly hefty at around 17 MB) will offer the best performance (compared below).
+
+### Example: 5D encoding (N = 5)
+For a 5 field encoder, where the result must fit in a 64 bit field, the max size of each field is 12 bits (⌊64 bits / 5 fields⌋).
+
+Suitable MortonNDEncoders:
+
+```c++
+// 1) 1 chunk, 12 bits. LUT size is 2^12 entries * 8 bytes per entry = 32.768 KB
+constexpr auto MortonND_5D_64 = mortonnd::MortonNDEncoder<5, 1, 12>();
+
+// 2) 2 chunks, 6 bits. LUT size is 2^6 entries * 4 bytes per entry = 256 bytes
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 2, 6>();
+
+// 3) 3 chunks, 4 bits. LUT size is 2^4 entries * 4 bytes per entry = 64 bytes
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 3, 4>();
+```
