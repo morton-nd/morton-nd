@@ -11,7 +11,7 @@ Field size in bits is calculated as the number of chunks multiplied by the size 
 ### Example: 2D encoding (N = 2)
 For a 2 field encoder, where the result must fit in a 32-bit field, the max field size is 16 bits (32 bits / 2 fields).
 
-Therefore, to create a suitable MortonNDEncoder, you must parameterize it such that chunks * bits per chunk = 16:
+To create a MortonNDEncoder to accommodate 16 bits, parameterize it such that chunks * bits per chunk = 16:
 
 ```c++
 // 1) 1 chunk, 16 bits. LUT size is 2^16 entries * 4 bytes per entry = 262.144 KB
@@ -50,9 +50,21 @@ constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 1, 21>();
 
 // 2) 3 chunks, 7 bits. LUT size is 2^7 entries * 4 bytes per entry = 512 bytes
 constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 3, 7>();
+
+auto encoding = MortonND_3D_64.Encode(9, 5, 1);
 ```
 
 As is the case in 2D, the larger table (while fairly hefty at around 17 MB) will offer the best performance (compared below).
+
+A 3 field encoder, where the result must fit in a 32 bit field (max field size = ⌊32 bits / 3 fields⌋ = 10 bits) can be achieved as follows:
+
+```c++
+// 1 chunk, 10 bits.
+constexpr auto MortonND_3D_32 = mortonnd::MortonNDEncoder<3, 1, 10>();
+
+// 2 chunks, 5 bits.
+constexpr auto MortonND_3D_32 = mortonnd::MortonNDEncoder<3, 2, 5>();
+```
 
 ### Example: 5D encoding (N = 5)
 For a 5 field encoder, where the result must fit in a 64 bit field, the max size of each field is 12 bits (⌊64 bits / 5 fields⌋).
@@ -68,4 +80,11 @@ constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 2, 6>();
 
 // 3) 3 chunks, 4 bits. LUT size is 2^4 entries * 4 bytes per entry = 64 bytes
 constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 3, 4>();
+
+auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ```
+
+## Compiling
+* GCC is much faster than Clang when generating LUTs at compile-time. Expect long compilation times with a large chunk size (LUT size) when using Clang. GCC can also handle up to a chunk size of 27 bits (28+ fails gracefully), whereas Clang will crash with a chunk size > 16 bits. For this reason, use GCC for large LUTs if possible.
+* Compile with release/optimization flags.
+* VC++ is untested.
