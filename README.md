@@ -84,6 +84,52 @@ constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 3, 4>();
 auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ```
 
+## 3D Performance
+Performance metrics were gathered using [Forceflow's libmorton library](https://github.com/Forceflow/libmorton), which contains a suite of different Morton encoding algorithms for 2D and 3D. The snippets below show performance comparisons to the algorithms found there, as well as comparisons between different MortonND LUT size configurations.
+
+libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test hardware).
+
+Depending on your use case and hardware, a particular configuration of Morton ND or perhaps one of the many libmorton algorithms may offer the best performance.
+
+The following metrics were collected on an i7-6920HQ (6th generation Quad-core Intel 2.9GHz mobile CPU), compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG".
+
+### 32-bit
+```
+++ Encoding 512^3 morton codes (134217728 in total)
+
+    Linear      Random
+    ======      ======
+    925.439 ms  874.468 ms  : 32-bit MortonND: 2 chunks, 5 bits
+    743.166 ms  711.925 ms  : 32-bit MortonND: 1 chunk, 10 bits  (fastest)
+    
+    libmorton algorithms
+    ====================
+    2663.162 ms 2599.181 ms : 32-bit For
+    2330.065 ms 2014.106 ms : 32-bit For ET
+    1171.010 ms 1135.522 ms : 32-bit Magicbits
+    857.056 ms  814.186 ms  : 32-bit LUT
+    831.843 ms  816.522 ms  : 32-bit LUT Shifted
+```
+
+### 64-bit
+```
+++ Encoding 512^3 morton codes (134217728 in total)
+
+    Linear      Random
+    ======      ======
+    1349.667 ms 1329.539 ms : 64-bit MortonND: 3 chunks, 7 bits  (fastest, random)
+    894.632 ms  1657.213 ms : 64-bit MortonND: 1 chunk, 21 bits  (fastest, linear)
+    
+    libmorton algorithms
+    ====================
+    1354.036 ms 1357.236 ms : 64-bit LUT Shifted
+    1471.270 ms 1467.422 ms : 64-bit LUT
+    1759.593 ms 1756.538 ms : 64-bit Magicbits
+    4726.462 ms 8649.010 ms : 64-bit For ET
+    8279.347 ms 8258.069 ms : 64-bit For
+
+```
+
 ## Compiling
 * GCC is much faster than Clang when generating LUTs at compile-time. Expect long compilation times with a large chunk size (LUT size) when using Clang. GCC can also handle up to a chunk size of 27 bits (28+ fails gracefully), whereas Clang will crash with a chunk size > 16 bits. For this reason, use GCC for large LUTs if possible.
 * Compile with release/optimization flags.
