@@ -27,7 +27,7 @@ constexpr auto MortonND_2D_32 = mortonnd::MortonNDEncoder<2, 4, 4>();
 // ... this is supported (as is 16 chunks, 1 bit), but probably not very useful
 ```
 
-Note the size of each LUT. A 16-bit chunk size requires a few hundred KB, but will provide the fastest encoding. A 4-bit chunk size only requires a 16 byte LUT, but each field will require roughly 3 times the number of lookup, shifting, or-ing and masking operations. See the performance section below for a comparison.
+Note the size of each LUT. A 16-bit chunk size requires a few hundred KB, but will likely provide the fastest encoding. A 4-bit chunk size only requires a 16 byte LUT, but each field will require roughly 3 times the number of lookup, shifting, or-ing and masking operations. See the performance section below for a comparison.
 
 The encode function is variadic, but will assert that exactly 2 fields are specified for 2D (and N for ND):
 ```c++
@@ -53,8 +53,6 @@ constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 3, 7>();
 
 auto encoding = MortonND_3D_64.Encode(9, 5, 1);
 ```
-
-As is the case in 2D, the larger table (while fairly hefty at around 17 MB) will offer the best performance (compared below).
 
 A 3 field encoder, where the result must fit in a 32 bit field (max field size = ⌊32 bits / 3 fields⌋ = 10 bits) can be achieved as follows:
 
