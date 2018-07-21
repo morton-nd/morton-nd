@@ -26,19 +26,22 @@ using built_in_t =
                     ::type>::type>::type>::type;
 
 /**
- * @param Fields the number of fields (components) to encode/decode
- * @param Chunks the number of chunks per field
- * @param Bits the number of bits per chunk
+ * @param Fields the number of fields (components) to encode
+ * @param FieldBits the number of bits in each input field, starting with the LSb. Higher bits are not cleared.
+ * @param LutBits the number of bits for the LUT. Each field will be looked-up 'LutBits' bits at a time.
  * @param T the type of the components to encode/decode, as well as the type of the result
  */
-template<std::size_t Fields, std::size_t Chunks, std::size_t Bits, typename T = built_in_t<Fields * Chunks * Bits>>
+template<std::size_t Fields, std::size_t FieldBits, std::size_t LutBits, typename T = built_in_t<Fields * FieldBits>>
 class MortonNDEncoder
 {
-    // LUT entry size is always Fields * Bits. If no suitable built-in type can hold the entry, the user-specified field
+    // LUT entry size is always Fields * LutBits. If no suitable built-in type can hold the entry, the user-specified field
     // type will be used (if provided).
-    using lut_entry_t = built_in_t<Fields * Bits, T>;
+    using lut_entry_t = built_in_t<Fields * LutBits, T>;
 
 public:
+    static const std::size_t ChunkCount = 1 + ((FieldBits - 1) / LutBits);
+    static const T InputMask = ((T)1 << FieldBits) - 1;
+
     constexpr MortonNDEncoder(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
 
     template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
@@ -51,12 +54,12 @@ private:
     template<typename...Args>
     constexpr T EncodeInternal(T field1, Args... fields) const
     {
-        return (EncodeInternal(fields...) << 1) | LookupField(field1, std::make_index_sequence<Chunks>{});
+        return (EncodeInternal(fields...) << 1) | LookupField(field1, std::make_index_sequence<ChunkCount>{});
     }
 
     constexpr T EncodeInternal(T field) const
     {
-        return LookupField(field, std::make_index_sequence<Chunks>{});
+        return LookupField(field, std::make_index_sequence<ChunkCount>{});
     }
 
     template <size_t ...I>
@@ -67,7 +70,7 @@ private:
     template <typename ...Args>
     constexpr T LookupField(T field, size_t, Args... args) const
     {
-        return (LookupField(field >> Bits, args...) << (Fields * Bits)) | LookupTable[field & ChunkMask];
+        return (LookupField(field >> LutBits, args...) << (Fields * LutBits)) | LookupTable[field & ChunkMask];
     }
 
     constexpr T LookupField(T field, size_t) const
@@ -75,7 +78,7 @@ private:
         return LookupTable[field & ChunkMask];
     }
 
-    static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = Bits) {
+    static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = LutBits) {
         static_assert(Fields > 0, "Field parameter (# fields) must be > 0");
 
         return (bitsRemaining == 0)
@@ -93,11 +96,11 @@ private:
     }
 
     static constexpr size_t LutSize() {
-        return pow(2, Bits);
+        return pow(2, LutBits);
     }
 
+    static const T ChunkMask = ((T)1 << LutBits) - 1;
     const std::array<lut_entry_t, LutSize()> LookupTable;
-    const T ChunkMask = ((T)1 << Bits) - 1;
 };
 } // namespace mortonnd
 #endif
