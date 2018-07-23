@@ -34,6 +34,11 @@ using built_in_t =
 template<std::size_t Fields, std::size_t FieldBits, std::size_t LutBits, typename T = built_in_t<Fields * FieldBits>>
 class MortonNDEncoder
 {
+    static_assert(Fields > 0, "Parameter 'Fields' must be > 0.");
+    static_assert(FieldBits > 0, "Parameter 'FieldBits' must be > 0. ");
+    static_assert(LutBits > 0, "Parameter 'LutBits' must be > 0.");
+    static_assert(LutBits <= FieldBits, "Parameter 'LutBits' must be <= 'FieldBits'.");
+
     // LUT entry size is always Fields * LutBits. If no suitable built-in type can hold the entry, the user-specified field
     // type will be used (if provided).
     using lut_entry_t = built_in_t<Fields * LutBits, T>;
@@ -79,8 +84,6 @@ private:
     }
 
     static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = LutBits) {
-        static_assert(Fields > 0, "Field parameter (# fields) must be > 0");
-
         return (bitsRemaining == 0)
             ? input
             : (SplitByN(input >> 1, bitsRemaining - 1) << Fields) | (input & (lut_entry_t)1);
