@@ -14,7 +14,7 @@ While large LUTs offer the least bit manipulation overhead, they have a few draw
 
 <blockquote>
 <b>Note:</b></p>
-The max LUT size is 27 when compiled with GCC (8.1) and 16 for Clang (902.0.39.2). See the notes section below on various compiler limitations.
+The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2). See the notes section below on various compiler limitations.
 </blockquote>
 
 Once you've instantiated a `MortonNDEncoder`, use its `Encode` function to encode inputs. The encode function is variadic, but will assert that exactly N fields are specified. Note that this function is also marked `constexpr` and can be used in compile-time expressions.
@@ -91,7 +91,7 @@ auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ```
 
 ## 3D Performance
-Performance metrics were gathered using [Forceflow's libmorton library](https://github.com/Forceflow/libmorton), which contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the algorithms found there, as well as comparisons between different Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next). 
+Performance metrics were gathered using [@Forceflow's libmorton library](https://github.com/Forceflow/libmorton), which contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the algorithms found there, as well as comparisons between different Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
 
 libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment), as well as a suite of Morton decoders for 2D and 3D applications.
 
@@ -134,6 +134,11 @@ The following metrics (sorted by random access time, ascending) were collected o
 ```
 
 ## Compiling
-* GCC is much faster than Clang when generating LUTs at compile-time. Expect long compilation times with a large chunk size (`LutBits`) when using Clang. GCC can also handle up to a chunk size of 27 bits (28+ fail gracefully), whereas Clang will crash with a chunk size > 16 bits. For this reason, use GCC for large LUTs if possible.
-* Compile with release/optimization flags.
+* Expect long compilation times with a large chunk size (`LutBits`). The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2).
+* Compile with release/optimization flags for accurate performance.
 * VC++ is untested.
+
+## Thanks
+* Jeroen Baert (@Forceflow)
+  - [Morton encoding/decoding through bit interleaving: Implementations](https://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/)
+  - [libmorton](), a C++ header-only library for 2D and 3D Morton encoding *and* decoding, which includes non-LUT-based implementations (Magicbits, BMI2, etc.).
