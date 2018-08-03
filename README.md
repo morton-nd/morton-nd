@@ -142,3 +142,8 @@ The following metrics (sorted by random access time, ascending) were collected o
 * Jeroen Baert (@Forceflow)
   - [Morton encoding/decoding through bit interleaving: Implementations](https://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/)
   - [libmorton](), a C++ header-only library for 2D and 3D Morton encoding *and* decoding, which includes non-LUT-based implementations (Magicbits, BMI2, etc.).
+
+## License
+This project is licensed under the MIT license.
+
+Attribution is appreciated where applicable, and as such, a NOTICE file is included which may be distributed in the credits of derivative software.
