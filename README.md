@@ -12,11 +12,11 @@ auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
 ```
 
 ## Performance
-Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the 3D algorithms found there, as well as comparisons between different 3D Morton ND LUT size configurations.
+Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the 3D algorithms found there, as well as comparisons between different 3D Morton ND LUT size configurations.
 
 libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment).
 
-To run these tests on your own machine, clone the fork linked above. See the [README.md](https://github.com/kevinhartman/libmorton/blob/master/README.md#fork-changes) within for more details.
+To run these tests on your own machine, clone the fork linked above.
 
 The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
 
