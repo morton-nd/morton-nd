@@ -12,13 +12,13 @@ auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
 ```
 
 ## Performance
-Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the 3D algorithms found there, as well as comparisons between different 3D Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
+Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the 3D algorithms found there, as well as comparisons between different 3D Morton ND LUT size configurations.
 
 libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment).
 
-To run these tests on your own machine, clone the fork linked above.
+To run these tests on your own machine, clone the fork linked above. See the README.md within for more details.
 
-The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration.
+The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
 
 ### 32-bit
 ```
@@ -90,7 +90,7 @@ auto encoding = MortonND_3D_32.Encode(field1, field2, field3 & MortonND_3D_32::I
 ### Example: 2D encoding (N = 2)
 For a 2 field encoder, where the result must fit in a 32-bit field, the max field size is 16 bits (32 bits / 2 fields).
 
-Examples configurations of suitable `MortonNDEncoder`s for 2 fields (16 bits each):
+Example configurations of suitable `MortonNDEncoder`s for 2 fields (16 bits each):
 
 ```c++
 // 1) 1 chunk, 16 bits. LUT size is 2^16 entries * 4 bytes per entry = 262.144 KB
