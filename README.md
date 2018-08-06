@@ -16,7 +16,7 @@ Performance metrics were gathered using [this fork](https://github.com/kevinhart
 
 libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment).
 
-To run these tests on your own machine, clone the fork linked above. See the README.md within for more details.
+To run these tests on your own machine, clone the fork linked above. See the [README.md within](https://github.com/kevinhartman/libmorton/blob/master/README.md#fork-changes) for more details.
 
 The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
 
