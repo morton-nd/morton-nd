@@ -3,6 +3,57 @@ A C++14 header-only Morton encoding library for N dimensions, based on the Looku
 
 The encoder supports chunking, allowing a LUT smaller than the input field width to be used internally. This is useful for applications which require faster compilation times and smaller binaries (at the expense of extra bit manipulation operations required to combine chunks at runtime).
 
+```c++
+// Generates a 4D LUT encoder (4 fields, 16 bits each, 8-bit LUT) using the compiler.
+constexpr auto MortonND_4D = mortonnd::MortonNDEncoder<4, 16, 8>();
+
+// Encodes 4 fields. Can be done at run-time or compile-time.
+auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
+```
+
+## Performance
+Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the 3D algorithms found there, as well as comparisons between different 3D Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
+
+libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment).
+
+To run these tests on your own machine, clone the fork linked above.
+
+The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration.
+
+### 32-bit
+```
+++ Running each performance test 5 times and averaging results
+++ Encoding 512^3 morton codes (134217728 in total)
+
+    Linear      Random
+    ======      ======
+    651.950 ms  633.010 ms  : 32-bit (MortonND)    1 chunks, 10 bit LUT  (fastest)
+    759.446 ms  740.276 ms  : 32-bit (MortonND)    2 chunks, 8 bit LUT
+    749.832 ms  745.619 ms  : 32-bit (lib-morton)  LUT Shifted
+    790.699 ms  767.882 ms  : 32-bit (lib-morton)  LUT
+    818.037 ms  806.331 ms  : 32-bit (MortonND)    2 chunks, 5 bit LUT
+    1118.599 ms 1066.320 ms : 32-bit (lib-morton)  Magicbits
+    1712.808 ms 1722.190 ms : 32-bit (lib-morton)  For ET
+    2084.808 ms 1908.658 ms : 32-bit (lib-morton)  For
+```
+
+### 64-bit
+```
+++ Running each performance test 5 times and averaging results
+++ Encoding 512^3 morton codes (134217728 in total)
+
+    Linear      Random
+    ======      ======
+    1004.443 ms 988.571 ms  : 64-bit (MortonND)    3 chunks, 7 bit LUT   (fastest, random)
+    994.033 ms  1000.821 ms : 64-bit (lib-morton)  LUT Shifted
+    792.387 ms  1021.745 ms : 64-bit (MortonND)    2 chunks, 16 bit LUT
+    1120.427 ms 1121.624 ms : 64-bit (lib-morton)  LUT
+    672.983 ms  1207.028 ms : 64-bit (MortonND)    1 chunks, 21 bit LUT  (fastest, linear)
+    1285.695 ms 1305.508 ms : 64-bit (lib-morton)  Magicbits
+    6078.532 ms 6066.963 ms : 64-bit (lib-morton)  For
+    3568.369 ms 6542.374 ms : 64-bit (lib-morton)  For ET
+```
+
 ## Usage
 The `MortonNDEncoder` class encapsulates a LUT and provides a corresponding encode function. To instantiate it, you must specify the number of fields (N), the number of bits in each field (starting with the least significant bit), and the size of the LUT as template parameters. LUT size is expressed as the number of bits which will be looked up at a time (chunk size). For example, a LUT size of 16 yields a LUT with 2^16 entries, allowing 16 bit lookups.
 
@@ -102,51 +153,8 @@ constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 12, 4>();
 auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ```
 
-## 3D Performance
-Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the algorithms found there, as well as comparisons between different Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
-
-libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment), as well as a suite of Morton decoders for 2D and 3D applications.
-
-Depending on your use case and hardware, a particular configuration of Morton ND or one of the libmorton algorithms may offer the best encoding performance. To run these tests on your own machine, clone the fork linked above.
-
-The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration.
-
-### 32-bit
-```
-++ Running each performance test 5 times and averaging results
-++ Encoding 512^3 morton codes (134217728 in total)
-
-    Linear      Random
-    ======      ======
-    651.950 ms  633.010 ms  : 32-bit (MortonND)    1 chunks, 10 bit LUT  (fastest)
-    759.446 ms  740.276 ms  : 32-bit (MortonND)    2 chunks, 8 bit LUT
-    749.832 ms  745.619 ms  : 32-bit (lib-morton)  LUT Shifted
-    790.699 ms  767.882 ms  : 32-bit (lib-morton)  LUT
-    818.037 ms  806.331 ms  : 32-bit (MortonND)    2 chunks, 5 bit LUT
-    1118.599 ms 1066.320 ms : 32-bit (lib-morton)  Magicbits
-    1712.808 ms 1722.190 ms : 32-bit (lib-morton)  For ET
-    2084.808 ms 1908.658 ms : 32-bit (lib-morton)  For
-```
-
-### 64-bit
-```
-++ Running each performance test 5 times and averaging results
-++ Encoding 512^3 morton codes (134217728 in total)
-
-    Linear      Random
-    ======      ======
-    1004.443 ms 988.571 ms  : 64-bit (MortonND)    3 chunks, 7 bit LUT   (fastest, random)
-    994.033 ms  1000.821 ms : 64-bit (lib-morton)  LUT Shifted
-    792.387 ms  1021.745 ms : 64-bit (MortonND)    2 chunks, 16 bit LUT
-    1120.427 ms 1121.624 ms : 64-bit (lib-morton)  LUT
-    672.983 ms  1207.028 ms : 64-bit (MortonND)    1 chunks, 21 bit LUT  (fastest, linear)
-    1285.695 ms 1305.508 ms : 64-bit (lib-morton)  Magicbits
-    6078.532 ms 6066.963 ms : 64-bit (lib-morton)  For
-    3568.369 ms 6542.374 ms : 64-bit (lib-morton)  For ET
-```
-
 ## Compiling
-* Expect long compilation times with a large chunk size (`LutBits`). The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2).
+* Expect long compilation times with a large LUT size (`LutBits`). The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2).
 * Compile with release/optimization flags for accurate performance.
 * VC++ is untested.
 
