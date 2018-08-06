@@ -17,11 +17,23 @@ While large LUTs offer the least bit manipulation overhead, they have a few draw
 The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2). See the notes section below on various compiler limitations.
 </blockquote>
 
+### Encoding
 Once you've instantiated a `MortonNDEncoder`, use its `Encode` function to encode inputs. The encode function is variadic, but will assert that exactly N fields are specified. Note that this function is also marked `constexpr` and can be used in compile-time expressions.
 
+The upper unused bits of the input fields provided to the Encode function must first be cleared. For example, if the encoder is parameterized with a `FieldBits` value of `10`, then any bits beyond the 10th LSb must be 0. This can be done easily by `and`ing the field with `MortonNDEncoder<...>::InputMask`.
+
 ```c++
-// encoding in 2D
-auto encoding = MortonND_2D_32.Encode(9, 5);
+// encoding in 32-bit 3D, 10 bits per field
+constexpr auto MortonND_3D_32 = mortonnd::MortonNDEncoder<3, 10, 10>();
+
+const uint32_t field1 = 9;    // 9.
+const uint32_t field2 = 5;    // 5.
+const uint32_t field3 = 1025; // 1, but with a dirty upper bit (the 11th LSb is set).
+
+// The encoding of 9, 5, and 1
+// 
+// Note that the first two fields (9 and 5) don't require masking, but field3 (1) does since an upper unused bit is set.
+auto encoding = MortonND_3D_32.Encode(field1, field2, field3 & MortonND_3D_32::InputMask);
 ```
 
 ### Example: 2D encoding (N = 2)
@@ -91,7 +103,7 @@ auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ```
 
 ## 3D Performance
-Performance metrics were gathered using [this fork of @Forceflow's libmorton library](https://github.com/kevinhartman/libmorton). Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the algorithms found in libmorton, as well as comparisons between different Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
+Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the algorithms found there, as well as comparisons between different Morton ND LUT size configurations. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
 
 libmorton also includes an approach using the BMI2 instruction set, the performance of which is not captured here (due to incompatible test environment), as well as a suite of Morton decoders for 2D and 3D applications.
 
@@ -141,7 +153,7 @@ The following metrics (sorted by random access time, ascending) were collected o
 ## Thanks
 * Jeroen Baert (@Forceflow)
   - [Morton encoding/decoding through bit interleaving: Implementations](https://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/)
-  - [libmorton](), a C++ header-only library for 2D and 3D Morton encoding *and* decoding, which includes non-LUT-based implementations (Magicbits, BMI2, etc.).
+  - [libmorton](https://github.com/Forceflow/libmorton), a C++ header-only library for 2D and 3D Morton encoding *and* decoding, which includes non-LUT-based implementations (Magicbits, BMI2, etc.).
 
 ## License
 This project is licensed under the MIT license.
