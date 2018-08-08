@@ -9,7 +9,7 @@
 #include <iostream>
 #include <valarray>
 
-#include "../morton-nd/include/mortonND_encoder.h"
+#include "../morton-nd/include/mortonND_LUT_encoder.h"
 
 uint64_t split_by_n(uint64_t input, size_t fieldCount, size_t bitsRemaining) {
     return (bitsRemaining == 0) ? input : (split_by_n(input >> 1, fieldCount, bitsRemaining - 1) << fieldCount) | (input & 1);
@@ -35,12 +35,12 @@ uint64_t control_encode(size_t bitCount, const std::valarray<uint64_t>& fields) 
     return control_encode(bitCount, fields, fields.size());
 }
 
-constexpr auto Morton_1_12 = mortonnd::MortonNDEncoder<3, 1, 12>();
-constexpr auto Morton_2_6 = mortonnd::MortonNDEncoder<3, 2, 6>();
-constexpr auto Morton_3_4 = mortonnd::MortonNDEncoder<3, 3, 4>();
-constexpr auto Morton_4_3 = mortonnd::MortonNDEncoder<3, 4, 3>();
-constexpr auto Morton_6_2 = mortonnd::MortonNDEncoder<3, 6, 2>();
-constexpr auto Morton_12_1 = mortonnd::MortonNDEncoder<3, 12, 1>();
+constexpr auto Morton_1_12 = mortonnd::MortonNDLutEncoder<3, 1, 12>();
+constexpr auto Morton_2_6 = mortonnd::MortonNDLutEncoder<3, 2, 6>();
+constexpr auto Morton_3_4 = mortonnd::MortonNDLutEncoder<3, 3, 4>();
+constexpr auto Morton_4_3 = mortonnd::MortonNDLutEncoder<3, 4, 3>();
+constexpr auto Morton_6_2 = mortonnd::MortonNDLutEncoder<3, 6, 2>();
+constexpr auto Morton_12_1 = mortonnd::MortonNDLutEncoder<3, 12, 1>();
 
 void test_16_16_16() {
     for (uint64_t i = 0; i < 16; i++) {

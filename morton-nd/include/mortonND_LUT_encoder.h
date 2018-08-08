@@ -32,7 +32,7 @@ using built_in_t =
  * @param T the type of the components to encode/decode, as well as the type of the result
  */
 template<std::size_t Fields, std::size_t FieldBits, std::size_t LutBits, typename T = built_in_t<Fields * FieldBits>>
-class MortonNDEncoder
+class MortonNDLutEncoder
 {
     static_assert(Fields > 0, "Parameter 'Fields' must be > 0.");
     static_assert(FieldBits > 0, "Parameter 'FieldBits' must be > 0. ");
@@ -47,7 +47,7 @@ public:
     static const std::size_t ChunkCount = 1 + ((FieldBits - 1) / LutBits);
     static const T InputMask = ((T)1 << FieldBits) - 1;
 
-    constexpr MortonNDEncoder(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
+    constexpr MortonNDLutEncoder(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
 
     template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
     constexpr T Encode(T field1, Args... fields) const

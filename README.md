@@ -5,7 +5,7 @@ The encoder supports chunking, allowing a LUT smaller than the input field width
 
 ```c++
 // Generates a 4D LUT encoder (4 fields, 16 bits each, 8-bit LUT) using the compiler.
-constexpr auto MortonND_4D = mortonnd::MortonNDEncoder<4, 16, 8>();
+constexpr auto MortonND_4D = mortonnd::MortonNDLutEncoder<4, 16, 8>();
 
 // Encodes 4 fields. Can be done at run-time or compile-time.
 auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
@@ -55,11 +55,11 @@ The following metrics (sorted by random access time, ascending) were collected o
 ```
 
 ## Usage
-The `MortonNDEncoder` class encapsulates a LUT and provides a corresponding encode function. To instantiate it, you must specify the number of fields (N), the number of bits in each field (starting with the least significant bit), and the size of the LUT as template parameters. LUT size is expressed as the number of bits which will be looked up at a time (chunk size). For example, a LUT size of 16 yields a LUT with 2^16 entries, allowing 16 bit lookups.
+The `MortonNDLutEncoder` class encapsulates a LUT and provides a corresponding encode function. To instantiate it, you must specify the number of fields (N), the number of bits in each field (starting with the least significant bit), and the size of the LUT as template parameters. LUT size is expressed as the number of bits which will be looked up at a time (chunk size). For example, a LUT size of 16 yields a LUT with 2^16 entries, allowing 16 bit lookups.
 
-To create a `MortonNDEncoder` to accommodate N fields, each Q bits, parameterize it with `N` for `Fields`,  and `Q` for `FieldBits`. Use the third template parameter, `LutBits`, to specify the width of each lookup chunk. 
+To create a `MortonNDLutEncoder` to accommodate N fields, each Q bits, parameterize it with `N` for `Fields`,  and `Q` for `FieldBits`. Use the third template parameter, `LutBits`, to specify the width of each lookup chunk.
 
-At both extremes, a  `LutBits` value equal to `FieldBits` will result in a single lookup (1 chunk), whereas a value of `1` will result in `|FieldBits|` lookups (`|FieldBits|` chunks). For every additional chunk, additional bit manipulation operations will be required to combine results (increasing encode time), however, the `MortonNDEncoder` class was written with compiler optimization in mind and should not introduce additional function calls. The number of chunks which will be used based on your configuration is exposed as a static member field to aid in performance debugging.
+At both extremes, a  `LutBits` value equal to `FieldBits` will result in a single lookup (1 chunk), whereas a value of `1` will result in `|FieldBits|` lookups (`|FieldBits|` chunks). For every additional chunk, additional bit manipulation operations will be required to combine results (increasing encode time), however, the `MortonNDLutEncoder` class was written with compiler optimization in mind and should not introduce additional function calls. The number of chunks which will be used based on your configuration is exposed as a static member field to aid in performance debugging.
 
 While large LUTs offer the least bit manipulation overhead, they have a few drawbacks: compilation time increases significantly with larger values, they take up more space in the program image / executable, and they can be slower than smaller LUTs due to cache misses, depending on the domain's access pattern.
 
@@ -69,13 +69,13 @@ The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2
 </blockquote>
 
 ### Encoding
-Once you've instantiated a `MortonNDEncoder`, use its `Encode` function to encode inputs. The encode function is variadic, but will assert that exactly N fields are specified. Note that this function is also marked `constexpr` and can be used in compile-time expressions.
+Once you've instantiated a `MortonNDLutEncoder`, use its `Encode` function to encode inputs. The encode function is variadic, but will assert that exactly N fields are specified. Note that this function is also marked `constexpr` and can be used in compile-time expressions.
 
-The upper unused bits of the input fields provided to the Encode function must first be cleared. For example, if the encoder is parameterized with a `FieldBits` value of `10`, then any bits beyond the 10th LSb must be 0. This can be done easily by `and`ing the field with `MortonNDEncoder<...>::InputMask`.
+The upper unused bits of the input fields provided to the Encode function must first be cleared. For example, if the encoder is parameterized with a `FieldBits` value of `10`, then any bits beyond the 10th LSb must be 0. This can be done easily by `and`ing the field with `MortonNDLutEncoder<...>::InputMask`.
 
 ```c++
 // encoding in 32-bit 3D, 10 bits per field
-constexpr auto MortonND_3D_32 = mortonnd::MortonNDEncoder<3, 10, 10>();
+constexpr auto MortonND_3D_32 = mortonnd::MortonNDLutEncoder<3, 10, 10>();
 
 const uint32_t field1 = 9;    // 9.
 const uint32_t field2 = 5;    // 5.
@@ -90,17 +90,17 @@ auto encoding = MortonND_3D_32.Encode(field1, field2, field3 & MortonND_3D_32::I
 ### Example: 2D encoding (N = 2)
 For a 2 field encoder, where the result must fit in a 32-bit field, the max field size is 16 bits (32 bits / 2 fields).
 
-Example configurations of suitable `MortonNDEncoder`s for 2 fields (16 bits each):
+Example configurations of suitable `MortonNDLutEncoder`s for 2 fields (16 bits each):
 
 ```c++
 // 1) 1 chunk, 16 bits. LUT size is 2^16 entries * 4 bytes per entry = 262.144 KB
-constexpr auto MortonND_2D_32 = mortonnd::MortonNDEncoder<2, 16, 16>();
+constexpr auto MortonND_2D_32 = mortonnd::MortonNDLutEncoder<2, 16, 16>();
 
 // 2) 2 chunks, 8 bits. LUT size is 2^8 entries * 2 bytes per entry = 512 bytes
-constexpr auto MortonND_2D_32 = mortonnd::MortonNDEncoder<2, 16, 8>();
+constexpr auto MortonND_2D_32 = mortonnd::MortonNDLutEncoder<2, 16, 8>();
 
 // 3) 4 chunks, 4 bits. LUT size is 2^4 entires * 1 byte per entry = 16 bytes
-constexpr auto MortonND_2D_32 = mortonnd::MortonNDEncoder<2, 16, 4>();
+constexpr auto MortonND_2D_32 = mortonnd::MortonNDLutEncoder<2, 16, 4>();
 ```
 
 Note the size of each LUT. A 16-bit chunk size requires a few hundred KB, but will likely provide the fastest encoding. A 4-bit chunk size only requires a 16 byte LUT, but each field will require roughly 3 times the number of lookup, shifting, or-ing and masking operations.
@@ -108,47 +108,47 @@ Note the size of each LUT. A 16-bit chunk size requires a few hundred KB, but wi
 ### Example: 3D encoding (N = 3)
 For a 3 field encoder, where the result must fit in a 64 bit field, the max size of each field is 21 bits (⌊64 bits / 3 fields⌋).
 
-`MortonNDEncoder` for 3 fields, each 21 bits:
+`MortonNDLutEncoder` for 3 fields, each 21 bits:
 
 ```c++
 // 1) 1 chunk, 21 bits. LUT size is 2^21 entries * 8 bytes per entry = 16.777216 MB
-constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 21, 21>();
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDLutEncoder<3, 21, 21>();
 
 // 2) 2 chunk, 16 bits. LUT size is 2^16 entries * 8 bytes per entry = 524.288 KB
-constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 21, 16>();
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDLutEncoder<3, 21, 16>();
 
 // 3) 3 chunks, 7 bits. LUT size is 2^7 entries * 4 bytes per entry = 512 bytes
-constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<3, 21, 7>();
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDLutEncoder<3, 21, 7>();
 
 auto encoding = MortonND_3D_64.Encode(9, 5, 1);
 ```
 
 For a 3 field encoder, where the result must fit in a 32 bit field, max field size = ⌊32 bits / 3 fields⌋ = 10 bits.
 
-`MortonNDEncoder` for 3 fields, each 10 bits:
+`MortonNDLutEncoder` for 3 fields, each 10 bits:
 
 ```c++
 // 1 chunk, 10 bits.
-constexpr auto MortonND_3D_32 = mortonnd::MortonNDEncoder<3, 10, 10>();
+constexpr auto MortonND_3D_32 = mortonnd::MortonNDLutEncoder<3, 10, 10>();
 
 // 2 chunks, 5 bits.
-constexpr auto MortonND_3D_32 = mortonnd::MortonNDEncoder<3, 10, 5>();
+constexpr auto MortonND_3D_32 = mortonnd::MortonNDLutEncoder<3, 10, 5>();
 ```
 
 ### Example: 5D encoding (N = 5)
 For a 5 field encoder, where the result must fit in a 64 bit field, the max size of each field is 12 bits (⌊64 bits / 5 fields⌋).
 
-`MortonNDEncoder` for 5 fields, each 12 bits:
+`MortonNDLutEncoder` for 5 fields, each 12 bits:
 
 ```c++
 // 1) 1 chunk, 12 bits. LUT size is 2^12 entries * 8 bytes per entry = 32.768 KB
-constexpr auto MortonND_5D_64 = mortonnd::MortonNDEncoder<5, 12, 12>();
+constexpr auto MortonND_5D_64 = mortonnd::MortonNDLutEncoder<5, 12, 12>();
 
 // 2) 2 chunks, 6 bits. LUT size is 2^6 entries * 4 bytes per entry = 256 bytes
-constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 12, 6>();
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDLutEncoder<5, 12, 6>();
 
 // 3) 3 chunks, 4 bits. LUT size is 2^4 entries * 4 bytes per entry = 64 bytes
-constexpr auto MortonND_3D_64 = mortonnd::MortonNDEncoder<5, 12, 4>();
+constexpr auto MortonND_3D_64 = mortonnd::MortonNDLutEncoder<5, 12, 4>();
 
 auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ```
