@@ -5,6 +5,7 @@
 #ifndef MORTON_ND_MORTONND_BMI2_ENCODER_H
 #define MORTON_ND_MORTONND_BMI2_ENCODER_H
 
+#if defined(__BMI2__)
 #include <array>
 #include <cmath>
 #include <limits>
@@ -61,4 +62,5 @@ private:
 };
 }
 
+#endif
 #endif //MORTON_ND_MORTONND_BMI2_ENCODER_H
