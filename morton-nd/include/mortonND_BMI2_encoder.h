@@ -18,8 +18,10 @@ template<std::size_t Fields, typename T,
 class MortonNDBmiEncoder
 {
 public:
+    constexpr MortonNDBmiEncoder() : Selectors(BuildSelectorMasks(std::make_index_sequence<Fields>{})) {}
+
     template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
-    inline static T Encode(T field1, Args... fields)
+    inline T Encode(T field1, Args... fields) const
     {
         return EncodeInternal(field1, fields...);
     }
@@ -28,21 +30,21 @@ private:
     static const std::size_t FieldBits = std::numeric_limits<T>::digits / Fields;
 
     template<typename...Args>
-    static inline T EncodeInternal(T field1, Args... fields)
+    inline T EncodeInternal(T field1, Args... fields) const
     {
         return EncodeInternal(fields...) | Deposit(field1, Fields - sizeof...(fields) - 1);
     }
 
-    static inline T EncodeInternal(T field)
+    inline T EncodeInternal(T field) const
     {
         return Deposit(field, Fields - 1);
     }
 
-    static inline uint32_t Deposit(uint32_t field, size_t selectorIndex) {
+    inline uint32_t Deposit(uint32_t field, size_t selectorIndex) const {
         return _pdep_u32(field, Selectors[selectorIndex]);
     }
 
-    static inline uint64_t Deposit(uint64_t field, size_t selectorIndex) {
+    inline uint64_t Deposit(uint64_t field, size_t selectorIndex) const {
         return _pdep_u64(field, Selectors[selectorIndex]);
     }
 
@@ -55,7 +57,7 @@ private:
         return std::array<T, sizeof...(i)>{{(BuildSelector(FieldBits) << i)...}};
     }
 
-    static constexpr std::array<T, Fields> Selectors = BuildSelectorMasks(std::make_index_sequence<Fields>{});
+    const std::array<T, Fields> Selectors;
 };
 }
 

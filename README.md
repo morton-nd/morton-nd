@@ -8,7 +8,7 @@ See the [Morton ND BMI2 Usage Guide](docs/MortonND_BMI2.md) for details.
 
 ```c++
 // Encodes 4 fields into a uint64_t result.
-auto encoding = mortonnd::MortonNDBmiEncoder<4, uint64_t>::Encode(f1, f2, f3, f4);
+auto encoding = mortonnd::MortonNDBmiEncoder<4, uint64_t>().Encode(f1, f2, f3, f4);
 ```
 
 ### Lookup Table (LUT)
