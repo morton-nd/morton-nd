@@ -47,7 +47,7 @@ public:
     static const std::size_t ChunkCount = 1 + ((FieldBits - 1) / LutBits);
     static const T InputMask = ((T)1 << FieldBits) - 1;
 
-    constexpr MortonNDLutEncoder(): LookupTable(BuildLut(std::make_index_sequence<LutSize()>{})) {}
+    constexpr MortonNDLutEncoder() = default;
 
     template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
     constexpr T Encode(T field1, Args... fields) const
@@ -103,7 +103,7 @@ private:
     }
 
     static const T ChunkMask = ((T)1 << LutBits) - 1;
-    const std::array<lut_entry_t, LutSize()> LookupTable;
+    const std::array<lut_entry_t, LutSize()> LookupTable = BuildLut(std::make_index_sequence<LutSize()>{});
 };
 } // namespace mortonnd
 #endif
