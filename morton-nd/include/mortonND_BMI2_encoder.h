@@ -33,20 +33,22 @@ private:
     template<typename...Args>
     inline T EncodeInternal(T field1, Args... fields) const
     {
-        return EncodeInternal(fields...) | Deposit(field1, Fields - sizeof...(fields) - 1);
+        return EncodeInternal(fields...) | Deposit<Fields - sizeof...(fields) - 1>(field1);
     }
 
     inline T EncodeInternal(T field) const
     {
-        return Deposit(field, Fields - 1);
+        return Deposit<Fields - 1>(field);
     }
 
-    inline uint32_t Deposit(uint32_t field, size_t selectorIndex) const {
-        return _pdep_u32(field, Selectors[selectorIndex]);
+    template<size_t Index>
+    inline uint32_t Deposit(uint32_t field) const {
+        return _pdep_u32(field, Selectors[Index]);
     }
 
-    inline uint64_t Deposit(uint64_t field, size_t selectorIndex) const {
-        return _pdep_u64(field, Selectors[selectorIndex]);
+    template<size_t Index>
+    inline uint64_t Deposit(uint64_t field) const {
+        return _pdep_u64(field, Selectors[Index]);
     }
 
     static constexpr T BuildSelector(size_t bitsRemaining) {
