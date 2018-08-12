@@ -7,4 +7,4 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(morton-nd
         main.cpp
-        ../morton-nd/include/mortonND_LUT_encoder.h ../morton-nd/include/mortonND_BMI2_encoder.h)
+        ../morton-nd/include/mortonND_LUT_encoder.h ../morton-nd/include/mortonND_BMI2.h)

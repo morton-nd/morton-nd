@@ -2,8 +2,8 @@
 // Created by Kevin Hartman on 8/6/18.
 //
 
-#ifndef MORTON_ND_MORTONND_BMI2_ENCODER_H
-#define MORTON_ND_MORTONND_BMI2_ENCODER_H
+#ifndef MORTON_ND_MORTONND_BMI2_H
+#define MORTON_ND_MORTONND_BMI2_H
 
 #if defined(__BMI2__)
 #include <array>
@@ -58,27 +58,27 @@ private:
         return std::make_tuple(Extract<i>(encoding)...);
     }
 
-    template<size_t Index>
+    template<size_t FieldIndex>
     static inline uint32_t Deposit(uint32_t field) {
-        return _pdep_u32(field, Selector << Index);
+        return _pdep_u32(field, Selector << FieldIndex);
     }
 
-    template<size_t Index>
+    template<size_t FieldIndex>
     static inline uint64_t Deposit(uint64_t field) {
-        return _pdep_u64(field, Selector << Index);
+        return _pdep_u64(field, Selector << FieldIndex);
     }
 
-    template<size_t Index>
+    template<size_t FieldIndex>
     static inline uint32_t Extract(uint32_t encoding) {
-        return _pext_u32(encoding, Selector << Index);
+        return _pext_u32(encoding, Selector << FieldIndex);
     }
 
-    template<size_t Index>
+    template<size_t FieldIndex>
     static inline uint64_t Extract(uint64_t encoding) {
-        return _pext_u64(encoding, Selector << Index);
+        return _pext_u64(encoding, Selector << FieldIndex);
     }
 };
 }
 
 #endif
-#endif //MORTON_ND_MORTONND_BMI2_ENCODER_H
+#endif //MORTON_ND_MORTONND_BMI2_H
