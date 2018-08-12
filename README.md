@@ -47,16 +47,28 @@ The following metrics (sorted by random access time, ascending) were collected o
 
     Linear      Random
     ======      ======
-    643.219 ms  610.135 ms  : 32-bit (MortonND)    LUT: 1 chunks, 10 bit LUT  (fastest, random)
-    635.962 ms  624.285 ms  : 32-bit (MortonND)    BMI2
-    634.450 ms  626.686 ms  : 32-bit (lib-morton)  BMI2 instruction set       (fastest, linear)
-    724.331 ms  718.027 ms  : 32-bit (lib-morton)  LUT Shifted
-    736.239 ms  724.107 ms  : 32-bit (MortonND)    LUT: 2 chunks, 8 bit LUT
-    748.223 ms  733.092 ms  : 32-bit (lib-morton)  LUT
-    793.999 ms  786.195 ms  : 32-bit (MortonND)    LUT: 2 chunks, 5 bit LUT
-    1047.713 ms 1028.900 ms : 32-bit (lib-morton)  Magicbits
-    1656.251 ms 1649.317 ms : 32-bit (lib-morton)  For ET
-    1800.730 ms 1792.513 ms : 32-bit (lib-morton)  For
+    644.383 ms  621.580 ms  : 32-bit (MortonND)    LUT: 1 chunks, 10 bit LUT
+    648.476 ms  640.081 ms  : 32-bit (MortonND)    BMI2
+    651.312 ms  643.003 ms  : 32-bit (lib-morton)  BMI2 instruction set
+    740.515 ms  733.843 ms  : 32-bit (lib-morton)  LUT Shifted
+    758.591 ms  747.817 ms  : 32-bit (lib-morton)  LUT
+    788.011 ms  760.917 ms  : 32-bit (MortonND)    LUT: 2 chunks, 8 bit LUT
+    815.661 ms  801.993 ms  : 32-bit (MortonND)    LUT: 2 chunks, 5 bit LUT
+    1069.366 ms 1058.250 ms : 32-bit (lib-morton)  Magicbits
+    1696.491 ms 1689.635 ms : 32-bit (lib-morton)  For ET
+    1839.854 ms 1834.307 ms : 32-bit (lib-morton)  For
+    
+++ Decoding 512^3 morton codes (134217728 in total)
+
+    Linear      Random
+    ======      ======
+    682.018 ms  3861.763 ms : 32-bit (lib-morton)  BMI2 Instruction set
+    684.574 ms  3883.193 ms : 32-bit (MortonND)    MortonND: BMI2
+    1034.161 ms 4241.783 ms : 32-bit (lib-morton)  LUT Shifted
+    1145.437 ms 4372.682 ms : 32-bit (lib-morton)  Magicbits
+    1192.125 ms 4375.222 ms : 32-bit (lib-morton)  LUT
+    2435.355 ms 5892.361 ms : 32-bit (lib-morton)  For
+    3441.597 ms 6166.849 ms : 32-bit (lib-morton)  For ET
 ```
 
 ### 64-bit
@@ -66,16 +78,28 @@ The following metrics (sorted by random access time, ascending) were collected o
 
     Linear      Random
     ======      ======
-    674.413 ms  661.722 ms  : 64-bit (lib-morton)  BMI2 instruction set       (fastest)
-    677.112 ms  674.089 ms  : 64-bit (MortonND)    BMI2
-    959.701 ms  951.082 ms  : 64-bit (MortonND)    LUT: 3 chunks, 7 bit LUT
-    747.045 ms  967.286 ms  : 64-bit (MortonND)    LUT: 2 chunks, 16 bit LUT
-    973.362 ms  977.558 ms  : 64-bit (lib-morton)  LUT Shifted
-    1043.979 ms 1041.137 ms : 64-bit (lib-morton)  LUT
-    634.308 ms  1095.827 ms : 64-bit (MortonND)    LUT: 1 chunks, 21 bit LUT
-    1261.956 ms 1249.309 ms : 64-bit (lib-morton)  Magicbits
-    3619.233 ms 3629.182 ms : 64-bit (lib-morton)  For
-    2310.747 ms 3909.334 ms : 64-bit (lib-morton)  For ET
+    682.781 ms  676.863 ms  : 64-bit (MortonND)    BMI2
+    691.945 ms  687.623 ms  : 64-bit (lib-morton)  BMI2 instruction set
+    984.001 ms  975.855 ms  : 64-bit (MortonND)    LUT: 3 chunks, 7 bit LUT
+    762.784 ms  994.220 ms  : 64-bit (MortonND)    LUT: 2 chunks, 16 bit LUT
+    996.148 ms  994.599 ms  : 64-bit (lib-morton)  LUT Shifted
+    1067.235 ms 1064.724 ms : 64-bit (lib-morton)  LUT
+    647.497 ms  1139.275 ms : 64-bit (MortonND)    LUT: 1 chunks, 21 bit LUT
+    1287.558 ms 1284.486 ms : 64-bit (lib-morton)  Magicbits
+    3695.027 ms 3691.027 ms : 64-bit (lib-morton)  For
+    2366.875 ms 4015.031 ms : 64-bit (lib-morton)  For ET
+    
+++ Decoding 512^3 morton codes (134217728 in total)
+
+    Linear      Random
+    ======      ======
+    679.403 ms  3819.525 ms : 64-bit (lib-morton)  BMI2 Instruction set
+    689.146 ms  3863.148 ms : 64-bit (MortonND)    BMI2
+    1338.503 ms 4600.688 ms : 64-bit (lib-morton)  Magicbits
+    1481.526 ms 4672.497 ms : 64-bit (lib-morton)  LUT Shifted
+    1748.424 ms 4974.474 ms : 64-bit (lib-morton)  LUT
+    3108.945 ms 8864.368 ms : 64-bit (lib-morton)  For ET
+    5764.171 ms 9157.460 ms : 64-bit (lib-morton)  For
 ```
 
 ## Thanks
