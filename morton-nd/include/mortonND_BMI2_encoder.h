@@ -19,6 +19,7 @@ template<std::size_t Fields, typename T,
 class MortonNDBmi
 {
 public:
+    static const std::size_t FieldBits = std::numeric_limits<T>::digits / Fields;
 
     template<typename...Args, typename std::enable_if<sizeof...(Args) == Fields - 1, int>::type = 0>
     static inline T Encode(T field1, Args... fields)
@@ -38,7 +39,6 @@ private:
         return bitsRemaining == 1 ? 1 : (BuildSelector(bitsRemaining - 1) << Fields) | 1;
     }
 
-    static const std::size_t FieldBits = std::numeric_limits<T>::digits / Fields;
     static const auto Selector = BuildSelector(FieldBits);
 
     template<typename...Args>
