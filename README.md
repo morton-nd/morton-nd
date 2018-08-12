@@ -7,13 +7,13 @@ Supports encoding and decoding in N dimensions, using Intel's BMI2 ISA extension
 See the [Morton ND BMI2 Usage Guide](docs/MortonND_BMI2.md) for details.
 
 ```c++
-constexpr auto MortonND_4D = mortonnd::MortonNDBmi<4, uint64_t>();
+using MortonND_4D = mortonnd::MortonNDBmi<4, uint64_t>;
 
 // Encodes 4 fields into a uint64_t result.
-auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
+auto encoding = MortonND_4D::Encode(f1, f2, f3, f4);
 
 // Decodes 4 fields.
-std::tie(f1, f2, f3, f4) = MortonND_4D.Decode(encoding);
+std::tie(f1, f2, f3, f4) = MortonND_4D::Decode(encoding);
 ```
 
 ### Lookup Table (LUT)
