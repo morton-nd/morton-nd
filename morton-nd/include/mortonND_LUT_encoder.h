@@ -98,12 +98,13 @@ private:
         return exp == 0 ? 1 : base * pow(base, exp - 1);
     }
 
-    static constexpr size_t LutSize() {
+    static constexpr size_t ComputeLutSize() {
         return pow(2, LutBits);
     }
 
+    static const size_t LutSize = ComputeLutSize();
     static const T ChunkMask = ((T)1 << LutBits) - 1;
-    const std::array<lut_entry_t, LutSize()> LookupTable = BuildLut(std::make_index_sequence<LutSize()>{});
+    const std::array<lut_entry_t, LutSize> LookupTable = BuildLut(std::make_index_sequence<LutSize>{});
 };
 } // namespace mortonnd
 #endif

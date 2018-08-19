@@ -5,7 +5,7 @@
 #ifndef MORTON_ND_MORTONND_BMI2_H
 #define MORTON_ND_MORTONND_BMI2_H
 
-#if defined(__BMI2__)
+#if defined(__BMI2__) || __AVX2__
 #include <array>
 #include <cmath>
 #include <limits>

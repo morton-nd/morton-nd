@@ -37,4 +37,4 @@ std::tie(d_field1, d_field2, d_field3) = MortonND_3D_32.Decode(encoding);
 ```
 
 ## Compiling
-* The `MortonNDBmi` class is conditionally compiled based on the definition of `__BMI2__`, which modern compilers will define automatically if invoked with `-mbmi2`. 
+* The `MortonNDBmi` class is conditionally compiled based on the definition of `__BMI2__` (or `__AVX2__` for MSVC), which GCC and Clang will define automatically if invoked with `-mbmi2`. If using MSVC, set your project to use Enhanced Instruction Set "Advanced Vector Extensions 2 (/arch:AVX2)".

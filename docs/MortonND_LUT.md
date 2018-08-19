@@ -3,13 +3,13 @@ The `MortonNDLutEncoder` class encapsulates a LUT and provides a corresponding e
 
 To create a `MortonNDLutEncoder` to accommodate N fields, each Q bits, parameterize it with `N` for `Fields`,  and `Q` for `FieldBits`. Use the third template parameter, `LutBits`, to specify the width of each lookup chunk.
 
-At both extremes, a  `LutBits` value equal to `FieldBits` will result in a single lookup (1 chunk), whereas a value of `1` will result in `|FieldBits|` lookups (`|FieldBits|` chunks). For every additional chunk, additional bit manipulation operations will be required to combine results (increasing encode time), however, the `MortonNDLutEncoder` class was written with compiler optimization in mind and should not introduce additional function calls. The number of chunks which will be used based on your configuration is exposed as a static member field to aid in performance debugging.
+At both extremes, a  `LutBits` value equal to `FieldBits` will result in a single lookup (1 chunk), whereas a value of `1` will result in `|FieldBits|` lookups (`|FieldBits|` chunks). For every additional chunk, additional bit manipulation operations will be required to combine results (increasing encode time), however, the `MortonNDLutEncoder` class was written with compiler optimization in mind and should not introduce additional function calls. The number of chunks which will be used based on your configuration is exposed as a static member field (`MortonNDLutEncoder<...>::ChunkCount`) to aid in performance debugging.
 
 While large LUTs offer the least bit manipulation overhead, they have a few drawbacks: compilation time increases significantly with larger values, they take up more space in the program image / executable, and they can be slower than smaller LUTs due to cache misses, depending on the domain's access pattern.
 
 <blockquote>
 <b>Note:</b></p>
-The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2). See the notes section below on various compiler limitations.
+The max LUT size is 24 when compiled with GCC (8.1), 25 for Clang (900.0.39.2), and 10 for MSVC (1915). See the notes section below on various compiler limitations.
 </blockquote>
 
 ### Encoding
@@ -100,4 +100,4 @@ auto encoding = MortonND_3D_64.Encode(17, 13, 9, 5, 1);
 ## Compiling
 * Expect long compilation times with a large LUT size (`LutBits`). The max LUT size is 24 when compiled with GCC (8.1) and 25 for Clang (900.0.39.2).
 * Compile with release/optimization flags for accurate performance.
-* VC++ is untested.
+* MSVC supports a maximum LUT size of 10. When configuring a LUT for use with MSVC, always choose to minimize the number of chunks needed over a smaller LUT (i.e. cache locality). This is recommended because MSVC unfortunately will not unroll the loops required to combine chunks, and this performance hit seems to out-weigh any cache benefit of a smaller LUT. For example, to encode 16-bit fields (`FieldsBits = 16`), at least 2 chunks are required since `⌊16 / (10, the max LUT size)⌋ = 2`. You can minimize the LUT size to `8` while maintaining a chunk count of 2, but any smaller will increase chunk count, worsening performance.
