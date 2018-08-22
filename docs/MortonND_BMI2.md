@@ -65,9 +65,9 @@ main:
         mov     edi, 1145324612           # Load z mask (0100 0100 0100 0100 0100 0100 0100 0100)
         pdep    edx, edx, edi             # Deposit
         or      edx, esi                  # OR deposited w and z
-        mov     esi, 572662306            # Load y mask
+        mov     esi, 572662306            # Load y mask (0010 0010 0010 0010 0010 0010 0010 0010)
         pdep    ecx, ecx, esi             # Deposit
-        mov     esi, 286331153            # Load x mask
+        mov     esi, 286331153            # Load x mask (0001 0001 0001 0001 0001 0001 0001 0001)
         pdep    eax, eax, esi             # Deposit
         or      eax, ecx                  # OR deposited x and y
         or      eax, edx                  # OR results of ORs above
@@ -89,19 +89,19 @@ int main() {
 #### Generated code
 ```asm
 main:
-        mov     eax, dword ptr [rip + encoding]
-        mov     ecx, 286331153
-        pext    ecx, eax, ecx
-        mov     edx, 572662306
-        pext    edx, eax, edx
-        mov     esi, 1145324612
-        pext    esi, eax, esi
-        mov     edi, -2004318072
-        mov     word ptr [rip + x], cx
-        mov     word ptr [rip + y], dx
-        mov     word ptr [rip + z], si
-        pext    eax, eax, edi
-        mov     word ptr [rip + w], ax
-        xor     eax, eax
+        mov     eax, dword ptr [rip + encoding]   # Load encoding into register
+        mov     ecx, 286331153                    # Load x mask
+        pext    ecx, eax, ecx                     # Extract x from encoding using mask
+        mov     edx, 572662306                    # Load y mask
+        pext    edx, eax, edx                     # Extract y from encoding
+        mov     esi, 1145324612                   # Load z mask
+        pext    esi, eax, esi                     # Extract z from encoding
+        mov     edi, -2004318072                  # Load w mask
+        mov     word ptr [rip + x], cx            # Store lower 16 bits of x
+        mov     word ptr [rip + y], dx            # Store lower 16 bits of y
+        mov     word ptr [rip + z], si            # Store lower 16 bits of z
+        pext    eax, eax, edi                     # Extract w from encoding
+        mov     word ptr [rip + w], ax            # Store lower 16 bits of w
+        xor     eax, eax                          # Clear eax
         ret
 ```
