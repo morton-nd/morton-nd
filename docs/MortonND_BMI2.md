@@ -38,3 +38,70 @@ std::tie(d_field1, d_field2, d_field3) = MortonND_3D_32.Decode(encoding);
 
 ## Compiling
 * The `MortonNDBmi` class is conditionally compiled based on the definition of `__BMI2__` (or `__AVX2__` for MSVC), which GCC and Clang will define automatically if invoked with `-mbmi2`. If using MSVC, set your project to use Enhanced Instruction Set "Advanced Vector Extensions 2 (/arch:AVX2)".
+
+## Code Generation
+This section shows the x86_64 machine code generated for both encoding and decoding in 4D. The snippets were compiled using Clang 6.0.0 with options: `-mbmi2 -O3`.
+
+### 4D Encoding
+#### Program
+```c++
+#include "mortonND_BMI2.h"
+
+uint16_t x = 1, y = 2, z = 3, w = 4;
+int main() {
+    return mortonnd::MortonNDBmi<4, uint32_t>::Encode(x, y, z, w);
+}
+```
+
+#### Generated code
+```asm
+main:
+        movzx   eax, word ptr [rip + x]   # Load x, y, z, and w into registers
+        movzx   ecx, word ptr [rip + y]
+        movzx   edx, word ptr [rip + z]
+        movzx   esi, word ptr [rip + w]
+        mov     edi, -2004318072          # Load w mask (1000 1000 1000 1000 1000 1000 1000 1000) into edi
+        pdep    esi, esi, edi             # Deposit w, spreading over mask (edi)
+        mov     edi, 1145324612           # Load z mask (0100 0100 0100 0100 0100 0100 0100 0100)
+        pdep    edx, edx, edi             # Deposit
+        or      edx, esi                  # OR deposited w and z
+        mov     esi, 572662306            # Load y mask
+        pdep    ecx, ecx, esi             # Deposit
+        mov     esi, 286331153            # Load x mask
+        pdep    eax, eax, esi             # Deposit
+        or      eax, ecx                  # OR deposited x and y
+        or      eax, edx                  # OR results of ORs above
+        ret
+```
+
+### 4D Decoding
+#### Program
+```c++
+#include "mortonND_BMI2.h"
+
+uint32_t encoding = 1095;
+uint16_t x, y, z, w;
+int main() {
+    std::tie(x, y, z, w) = mortonnd::MortonNDBmi<4, uint32_t>::Decode(encoding);
+}
+```
+
+#### Generated code
+```asm
+main:
+        mov     eax, dword ptr [rip + encoding]
+        mov     ecx, 286331153
+        pext    ecx, eax, ecx
+        mov     edx, 572662306
+        pext    edx, eax, edx
+        mov     esi, 1145324612
+        pext    esi, eax, esi
+        mov     edi, -2004318072
+        mov     word ptr [rip + x], cx
+        mov     word ptr [rip + y], dx
+        mov     word ptr [rip + z], si
+        pext    eax, eax, edi
+        mov     word ptr [rip + w], ax
+        xor     eax, eax
+        ret
+```
