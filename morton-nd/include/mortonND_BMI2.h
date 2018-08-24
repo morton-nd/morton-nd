@@ -9,6 +9,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <tuple>
 #include <type_traits>
 #include <immintrin.h>
 
