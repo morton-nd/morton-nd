@@ -75,7 +75,7 @@ private:
     template <typename ...Args>
     constexpr T LookupField(T field, size_t, Args... args) const
     {
-        return (LookupField(field >> LutBits, args...) << (Fields * LutBits)) | LookupTable[field & ChunkMask];
+        return (LookupField(field >> LutBits, args...) << (Fields * LutBits)) | (T)LookupTable[field & ChunkMask];
     }
 
     constexpr T LookupField(T field, size_t) const
