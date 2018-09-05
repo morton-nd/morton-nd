@@ -1,4 +1,4 @@
-# Morton ND
+# Morton ND (N-dimensional)
 A C++14 header-only Morton encoding library for N dimensions. Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
 
 ### Hardware (Intel BMI2)
@@ -33,14 +33,19 @@ constexpr auto MortonND_4D = mortonnd::MortonNDLutEncoder<4, 16, 8>();
 auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
 ```
 
-## Performance
-Performance metrics were gathered using [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [libmorton](https://github.com/Forceflow/libmorton) library. Libmorton contains a suite of different Morton encode/decode algorithms for 2D and 3D. The snippets below show performance comparisons to the 3D algorithms found there, as well as comparisons between different 3D configurations of Morton ND.
+## Testing and Performance
+Correctness and performance benchmark tests for 2D and 3D use cases are located in a separate repository. See [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [Libmorton](https://github.com/Forceflow/libmorton), which integrates Morton ND into Libmorton's existing test framework.
 
-To run these tests on your own machine, clone the fork linked above.
+In the future, a minimal set of validation tests as well as tests more specific to Morton ND (i.e. edge cases such as 1-D, high number of dimensions such as 16-D, custom `T` such as a `uint128_t` implementation) will appear in this repository directly (and run automatically via Travis CI).
 
-The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using "-O3 -DNDEBUG". Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
+### Benchmarks
+The snippets below show performance comparisons between various 3D configurations of Morton ND, as well as comparisons to the 3D algorithms found in Libmorton.
 
-### 32-bit
+To run these tests (and more!) on your own machine, clone the fork linked above.
+
+The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using `-O3 -DNDEBUG`. Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
+
+#### 32-bit
 ```
 ++ Running each performance test 5 times and averaging results
 ++ Encoding 512^3 morton codes (134217728 in total)
@@ -71,7 +76,7 @@ The following metrics (sorted by random access time, ascending) were collected o
     3441.597 ms 6166.849 ms : 32-bit (lib-morton)  For ET
 ```
 
-### 64-bit
+#### 64-bit
 ```
 ++ Running each performance test 5 times and averaging results
 ++ Encoding 512^3 morton codes (134217728 in total)
@@ -105,7 +110,7 @@ The following metrics (sorted by random access time, ascending) were collected o
 ## Thanks
 * Jeroen Baert (@Forceflow)
   - [Morton encoding/decoding through bit interleaving: Implementations](https://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/)
-  - [libmorton](https://github.com/Forceflow/libmorton), a C++ header-only library for 2D and 3D Morton encoding and decoding, which includes non-LUT-based implementations (Magicbits, BMI2, etc.).
+  - [libmorton](https://github.com/Forceflow/libmorton), a C++11 header-only library for 2D and 3D Morton encoding and decoding.
 
 ## License
 This project is licensed under the MIT license.
