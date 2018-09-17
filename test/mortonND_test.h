@@ -4,8 +4,8 @@
 #include <vector>
 
 struct test_method {
-	int(*test_func)();
+	bool(*test_func)();
 	std::string description;
 
-	test_method(int(*test_func)(), std::string description) : test_func(test_func), description(description) {}
+	test_method(bool(*test_func)(), std::string description) : test_func(test_func), description(description) {}
 };

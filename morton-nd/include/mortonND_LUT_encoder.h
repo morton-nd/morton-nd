@@ -44,6 +44,8 @@ class MortonNDLutEncoder
     using lut_entry_t = built_in_t<Fields * LutBits, T>;
 
 public:
+	typedef T type;
+
     static const std::size_t ChunkCount = 1 + ((FieldBits - 1) / LutBits);
     static const T InputMask = ((T)1 << FieldBits) - 1;
 

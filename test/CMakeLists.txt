@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(morton-nd
         main.cpp
 		mortonND_LUT_encoder_test.cpp
+		mortonND_test_util.h
 		mortonND_test_control.h
 		mortonND_test_common.h
 		mortonND_test.h

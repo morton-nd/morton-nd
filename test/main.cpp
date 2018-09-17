@@ -21,8 +21,8 @@ auto test_methods = std::vector<test_method>{
 
 int main(int argc, const char * argv[]) {
 	for (auto test : test_methods) {
-		int result = test.test_func();
-		std::cout << (result == 0 ? "[passed]" : "[failed]") << "  " << test.description << std::endl;
+		bool result = test.test_func();
+		std::cout << (result ? "[passed]" : "[failed]") << "  " << test.description << std::endl;
 	}
 
     return 0;
