@@ -20,6 +20,24 @@ static constexpr size_t Pow(size_t base, size_t exp) {
 	return exp == 0 ? 1 : base * Pow(base, exp - 1);
 }
 
+template<size_t idx, typename T>
+struct tuple_elem_t {
+	typedef T type;
+};
+
+template<typename ...T>
+struct type_sequence { };
+
+template<typename T, size_t...i>
+static auto make_type_sequence(std::index_sequence<i...>) {
+	return type_sequence<typename tuple_elem_t<i, T>::type...>{};
+}
+
+template<size_t size, typename T>
+static auto make_type_sequence() {
+	return make_type_sequence<T>(std::make_index_sequence<size>{});
+}
+
 template <typename T, size_t ...i>
 static void PrintTuple(T&& tuple, std::index_sequence<i...>) {
 	using expander = int[];

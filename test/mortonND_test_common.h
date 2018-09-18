@@ -6,7 +6,7 @@
 
 #include "mortonND_test_util.h"
 
-template <typename T, size_t FieldBits, size_t SliceBits = 4, typename Ret, typename ...Fields>
+template <typename T, size_t FieldBits, size_t SliceBits = FieldBits < 4 ? FieldBits : 4, typename Ret, typename ...Fields>
 static bool TestEncodeFunction(const std::function<Ret(Fields...)>& function) {
 	static const auto FieldCount = sizeof...(Fields);
 	static_assert(FieldCount * FieldBits <= std::numeric_limits<uint64_t>::digits, "Control encoder cannot support > 64 bits.");
