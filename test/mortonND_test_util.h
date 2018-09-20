@@ -69,16 +69,16 @@ static auto Apply(Func func, const std::tuple<Args...>& tuple) {
 }
 
 template<typename F, typename R, typename ...ToApply, size_t ...N>
-static auto ApplyIndexSeqs<F, R, 1>(F function, R reduce_func, std::tuple<ToApply...> out, std::index_sequence<N...>) {
+static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, 0>, std::tuple<ToApply...> out, std::index_sequence<N...>) {
 	return Reduce(reduce_func, Apply(function, std::tuple_cat(out, std::make_tuple(N)))...);
 }
 
 template<typename F, typename R, size_t M, typename ...ToApply, size_t ...N>
-static auto ApplyIndexSeqs(F function, R reduce_func, std::tuple<ToApply...> out, std::index_sequence<N...>) {
-	return Reduce(reduce_func, ApplyIndexSeqs<F, R, M - 1>(function, reduce_func, std::tuple_cat(out, std::make_tuple(N)), std::make_index_sequence<sizeof...(N)>{})...);
+static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, M>, std::tuple<ToApply...> out, std::index_sequence<N...>) {
+	return Reduce(reduce_func, ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M - 1>{}, std::tuple_cat(out, std::make_tuple(N)), std::make_index_sequence<sizeof...(N)>{})...);
 }
 
 template<size_t N, size_t M, typename F, typename R>
 static auto ApplyIndexSeqs(F function, R reduce_func) {
-	return ApplyIndexSeqs<F, R, M>(function, reduce_func, std::make_tuple<>(), std::make_index_sequence<N>{});
+	return ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M-1>{}, std::make_tuple<>(), std::make_index_sequence<N>{});
 }
