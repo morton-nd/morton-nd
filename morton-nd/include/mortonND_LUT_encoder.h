@@ -86,8 +86,8 @@ private:
     }
 
     static constexpr lut_entry_t SplitByN(lut_entry_t input, size_t bitsRemaining = LutBits) {
-        return (bitsRemaining == 0)
-            ? input
+        return (bitsRemaining == 1)
+            ? (input & (lut_entry_t)1)
             : (SplitByN(input >> 1, bitsRemaining - 1) << Fields) | (input & (lut_entry_t)1);
     }
 
