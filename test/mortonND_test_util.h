@@ -49,7 +49,7 @@ static void PrintTuple(T&& tuple, std::index_sequence<i...>) {
 }
 
 template <typename F, typename Arg>
-static auto Reduce(F reduce_func, Arg arg) {
+static auto Reduce(F, Arg arg) {
 	return arg;
 }
 
@@ -68,17 +68,17 @@ static auto Apply(Func func, const std::tuple<Args...>& tuple) {
 	return ApplyInternal(func, tuple, std::index_sequence_for<Args...>{});
 }
 
-template<typename F, typename R, typename ...ToApply, size_t ...N>
-static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, 0>, std::tuple<ToApply...> out, std::index_sequence<N...>) {
+template<typename T, typename F, typename R, typename ...ToApply, T ...N>
+static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, 0>, std::tuple<ToApply...> out, std::integer_sequence<T, N...>) {
 	return Reduce(reduce_func, Apply(function, std::tuple_cat(out, std::make_tuple(N)))...);
 }
 
-template<typename F, typename R, size_t M, typename ...ToApply, size_t ...N>
-static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, M>, std::tuple<ToApply...> out, std::index_sequence<N...>) {
-	return Reduce(reduce_func, ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M - 1>{}, std::tuple_cat(out, std::make_tuple(N)), std::make_index_sequence<sizeof...(N)>{})...);
+template<typename T, typename F, typename R, size_t M, typename ...ToApply, T ...N>
+static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, M>, std::tuple<ToApply...> out, std::integer_sequence<T, N...>) {
+	return Reduce(reduce_func, ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M - 1>{}, std::tuple_cat(out, std::make_tuple(N)), std::make_integer_sequence<T, sizeof...(N)>{})...);
 }
 
-template<size_t N, size_t M, typename F, typename R>
+template<typename T, T N, size_t M, typename F, typename R>
 static auto ApplyIndexSeqs(F function, R reduce_func) {
-	return ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M-1>{}, std::make_tuple<>(), std::make_index_sequence<N>{});
+	return ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M-1>{}, std::make_tuple<>(), std::make_integer_sequence<T, N>{});
 }
