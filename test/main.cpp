@@ -16,7 +16,7 @@
 #include <iostream>
 
 auto test_methods = std::vector<test_method>{
-	test_method(&mortonnd_lut::TestEncode, "Tests encoding for all 12 bit permutations.")
+	test_method(&mortonnd_lut::TestEncode, "Test LUT encoder configurations (dimension, field size, LUT entry size.")
 };
 
 int main(int argc, const char * argv[]) {

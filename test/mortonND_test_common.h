@@ -7,14 +7,14 @@
 #include "mortonND_test_util.h"
 
 template <size_t FieldBits, typename Ret, typename ...Fields>
-static bool TestEncodeFunctionSimple(const std::function<Ret(Fields...)>& function) {
+static bool TestEncodeFunctionFast(const std::function<Ret(Fields...)> &function) {
     static const auto MaxValue = Pow(2, FieldBits);
     static const auto FieldCount = sizeof...(Fields);
     static_assert(FieldCount * FieldBits <= std::numeric_limits<uint64_t>::digits, "Control encoder cannot support > 64 bits.");
     static_assert(std::numeric_limits<Ret>::digits >= FieldCount * FieldBits, "'morton' must support encoding width");
 
-    const std::function<bool(Fields...)> check_function = [&function](Fields...fields) -> bool {
-        const uint64_t correct = control_encode(fields...);
+    const std::function<bool(Fields...)> check_function = [&function](auto...fields) -> bool {
+        const uint64_t correct = control_encode<Fields...>(fields...);
         const Ret computed = function(fields...);
 
         if (computed != correct) {
@@ -42,8 +42,8 @@ static bool TestEncodeFunction(const std::function<Ret(Fields...)>& function) {
 
 	// For every set of 4 contiguous bits, test all possible values (0-15), with all other bits cleared
 	for (size_t offset = 0; offset <= FieldBits - SliceBits; offset++) {
-		const std::function<bool(Fields...)> check_function = [&function, offset](Fields...fields) -> bool {
-			const uint64_t correct = control_encode((fields << offset)...);
+		const std::function<bool(Fields...)> check_function = [&function, offset](auto...fields) -> bool {
+			const uint64_t correct = control_encode<Fields...>((fields << offset)...);
 			const Ret computed = function((fields << offset)...);
 
 			if (computed != correct) {
@@ -55,7 +55,7 @@ static bool TestEncodeFunction(const std::function<Ret(Fields...)>& function) {
 			return computed == correct;
 		};
 
-		bool result = ApplyIndexSeqs<Pow(2, SliceBits), sizeof...(Fields)>(check_function, std::logical_and<bool>{});
+		bool result = ApplyIndexSeqs<Ret, Pow(2, SliceBits), sizeof...(Fields)>(check_function, std::logical_and<bool>{});
 		if (!result) return false;
 	}
 

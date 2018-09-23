@@ -5,29 +5,39 @@
 
 template<size_t FieldBits, typename Ret, typename ...Fields, typename std::enable_if<sizeof...(Fields) < 6, int>::type = 0>
 bool TestEncode(const std::function<Ret(Fields...)>& function) {
+	std::cout << std::endl;
 	return TestEncodeFunction<FieldBits>(function);
 }
 
 template<size_t FieldBits, typename Ret, typename ...Fields, typename std::enable_if<sizeof...(Fields) >= 6, int>::type = 0>
 bool TestEncode(const std::function<Ret(Fields...)>& function) {
-	std::cout << "  Using simple test." << std::endl;
-	return TestEncodeFunctionSimple<FieldBits>(function);
+	std::cout << " (Dimensions > 5. Falling back to simple test)" << std::endl;
+	return TestEncodeFunctionFast<FieldBits>(function);
 }
 
 template<size_t FieldBits, typename Ret, typename ...Fields, size_t ...FieldIdx, size_t ...N>
 bool TestMortonNDLutSet(type_sequence<Fields...>, std::index_sequence<FieldIdx...>, std::index_sequence<N...>) {
-	static const auto luts = std::make_tuple(mortonnd::MortonNDLutEncoder<sizeof...(Fields), FieldBits, (N + 1)>()...);
-	static const auto funcs = std::make_tuple(
-		std::function<Ret(Fields...)>(std::bind(static_cast<Ret(mortonnd::MortonNDLutEncoder<sizeof...(Fields), FieldBits, (N + 1)>::*)(Fields...) const>(&mortonnd::MortonNDLutEncoder<sizeof...(Fields), FieldBits, (N + 1)>::Encode), std::get<N>(luts), variadic_placeholder<FieldIdx>{}...))...
-	);
+	// Generate all LUTs at compile-time
+	static constexpr auto luts = std::make_tuple(mortonnd::MortonNDLutEncoder<sizeof...(Fields), FieldBits, (N + 1)>()...);
 
-	return Reduce(std::logical_and<bool>{}, 
-		(std::cout << "Testing:  Fields = " << sizeof...(Fields) << ", Bits per field = " << FieldBits << ", Bits per LUT entry = " << (N + 1) << std::endl, TestEncode<FieldBits>(std::get<N>(funcs)))...
+	// Create function wrappers for each LUT's Encode instance method
+	static const auto funcs = std::make_tuple(std::function<Ret(Fields...)>(
+		std::bind(
+			static_cast<Ret(std::tuple_element<N, decltype(luts)>::type::*)(Fields...) const>(&std::tuple_element<N, decltype(luts)>::type::Encode),
+			std::get<N>(luts),
+			variadic_placeholder<FieldIdx>{}...
+		)
+	)...); // expands N, generating a function per LUT
+
+	return Reduce(std::logical_and<bool>{},
+		(std::cout << "  Test: Bits/Lookup = " << N + 1, TestEncode<FieldBits>(std::get<N>(funcs)))...
 	);
 }
 
 template<size_t Fields, size_t Digits, size_t FieldBits = Digits / Fields>
 bool TestMortonNDLutSet() {
+	std::cout << "Testing " << Digits << "-bit " << Fields << "D LUT encoders (Bits/Field = " << FieldBits << ")..." << std::endl;
+
 	// (LUT size doesn't affect the type. 1 is arbitrary.)
 	using T = typename mortonnd::MortonNDLutEncoder<Fields, FieldBits, 1>::type;
 	return TestMortonNDLutSet<FieldBits, T>(
@@ -67,6 +77,9 @@ bool mortonnd_lut::TestEncode() {
 		TestMortonNDLutSet<5, 32>(),
 		TestMortonNDLutSet<5, 16>(),
 		TestMortonNDLutSet<5, 8>(),
+
+		// 8D
+		TestMortonNDLutSet<8, 16>(),
 
 		// 32 Dimensions
 		TestMortonNDLutSet<32, 64>(),
