@@ -2,10 +2,12 @@
 #include <vector>
 
 #include "mortonND_test.h"
+#include "mortonND_LUT_encoder_test.h"
 
 #include <iostream>
 
 auto test_methods = std::vector<test_method>{
+    test_method(&mortonnd_lut::TestEncode, "Test LUT encoder configurations (dimension, field size, LUT entry size.")
 };
 
 int main(int argc, const char *argv[]) {
