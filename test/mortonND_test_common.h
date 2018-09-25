@@ -5,9 +5,10 @@
 #include <iostream>
 
 #include "mortonND_test_util.h"
+#include "mortonND_test_control.h"
 
 template<size_t FieldBits, typename Ret, typename ...Fields>
-static bool TestEncodeFunctionFast(const std::function<Ret(Fields...)> &function) {
+static bool TestEncodeFunction_Fast(const std::function<Ret(Fields...)> &function) {
     static const auto MaxValue = Pow(2, FieldBits);
     static const auto FieldCount = sizeof...(Fields);
     static_assert(FieldCount * FieldBits <= std::numeric_limits<uint64_t>::digits, "Control encoder cannot support > 64 bits.");
@@ -34,7 +35,7 @@ static bool TestEncodeFunctionFast(const std::function<Ret(Fields...)> &function
 };
 
 template<size_t FieldBits, size_t SliceBits = FieldBits < 4 ? FieldBits : 4, typename Ret, typename ...Fields>
-static bool TestEncodeFunction(const std::function<Ret(Fields...)> &function) {
+static bool TestEncodeFunction_Perms(const std::function<Ret(Fields...)> &function) {
     static const auto FieldCount = sizeof...(Fields);
     static_assert(FieldCount * FieldBits <= std::numeric_limits<uint64_t>::digits, "Control encoder cannot support > 64 bits.");
     static_assert(FieldBits >= SliceBits, "At least 4 bits from each field must fit into 'morton'");
@@ -60,4 +61,17 @@ static bool TestEncodeFunction(const std::function<Ret(Fields...)> &function) {
     }
 
     return true;
+}
+
+
+template<size_t FieldBits, typename Ret, typename ...Fields, typename std::enable_if<sizeof...(Fields) < 6, int>::type = 0>
+static bool TestEncodeFunction(const std::function<Ret(Fields...)> &function) {
+    std::cout << std::endl;
+    return TestEncodeFunction_Perms<FieldBits>(function);
+}
+
+template<size_t FieldBits, typename Ret, typename ...Fields, typename std::enable_if<sizeof...(Fields) >= 6, int>::type = 0>
+static bool TestEncodeFunction(const std::function<Ret(Fields...)> &function) {
+    std::cout << " (Dimensions > 5. Falling back to simple test)" << std::endl;
+    return TestEncodeFunction_Fast<FieldBits>(function);
 }

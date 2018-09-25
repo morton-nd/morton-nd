@@ -1,20 +1,8 @@
 #include "mortonND_LUT_encoder_test.h"
-#include "../morton-nd/include/mortonND_LUT_encoder.h"
-#include "mortonND_test_control.h"
 #include "mortonND_test_common.h"
 #include "variadic_placeholder.h"
 
-template<size_t FieldBits, typename Ret, typename ...Fields, typename std::enable_if<sizeof...(Fields) < 6, int>::type = 0>
-bool TestEncode(const std::function<Ret(Fields...)> &function) {
-    std::cout << std::endl;
-    return TestEncodeFunction<FieldBits>(function);
-}
-
-template<size_t FieldBits, typename Ret, typename ...Fields, typename std::enable_if<sizeof...(Fields) >= 6, int>::type = 0>
-bool TestEncode(const std::function<Ret(Fields...)> &function) {
-    std::cout << " (Dimensions > 5. Falling back to simple test)" << std::endl;
-    return TestEncodeFunctionFast<FieldBits>(function);
-}
+#include "../morton-nd/include/mortonND_LUT_encoder.h"
 
 template<size_t FieldBits, typename Ret, typename ...Fields, size_t ...FieldIdx, size_t ...N>
 bool TestMortonNDLutSet(type_sequence<Fields...>, std::index_sequence<FieldIdx...>, std::index_sequence<N...>) {
@@ -31,7 +19,7 @@ bool TestMortonNDLutSet(type_sequence<Fields...>, std::index_sequence<FieldIdx..
     )...); // expands N, generating a function per LUT
 
     return Reduce(std::logical_and<bool>{},
-        (std::cout << "  Test: Bits/Lookup = " << N + 1, TestEncode<FieldBits>(std::get<N>(funcs)))...
+        (std::cout << "  Test: Bits/Lookup = " << N + 1, TestEncodeFunction<FieldBits>(std::get<N>(funcs)))...
     );
 }
 
