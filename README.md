@@ -1,4 +1,6 @@
 # Morton ND (N-dimensional)
+[![Build Status](https://travis-ci.org/kevinhartman/morton-nd.svg?branch=master)](https://travis-ci.org/kevinhartman/morton-nd) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+
 A C++14 header-only Morton encoding library for N dimensions. Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
 
 ### Hardware (Intel BMI2)
@@ -34,9 +36,9 @@ auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
 ```
 
 ## Testing and Performance
-Correctness and performance benchmark tests for 2D and 3D use cases are located in a separate repository. See [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [Libmorton](https://github.com/Forceflow/libmorton), which integrates Morton ND into Libmorton's existing test framework.
+Validation testing specific to MortonND is located in the `tests` folder, covering N-Dimensional configurations where N ∈ { 1, 2, 3, 4, 5, 8, 16, 32, 64 } for common field sizes, and is run as part of Travis CI.
 
-In the future, a minimal set of validation tests as well as tests more specific to Morton ND (i.e. edge cases such as 1-D, high number of dimensions such as 16-D, custom `T` such as a `uint128_t` implementation) will appear in this repository directly (and run automatically via Travis CI).
+Performance benchmark tests (and additional validation) for 2D and 3D use cases are located in a separate repository. See [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [Libmorton](https://github.com/Forceflow/libmorton), which integrates Morton ND into Libmorton's existing test framework.
 
 ### Benchmarks
 The snippets below show performance comparisons between various 3D configurations of Morton ND, as well as comparisons to the 3D algorithms found in Libmorton.
