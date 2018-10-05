@@ -13,10 +13,14 @@ auto test_methods = std::vector<test_method>{
 };
 
 int main(int argc, const char *argv[]) {
+    bool ok = true;
+
     for (auto test : test_methods) {
         bool result = test.test_func();
         std::cout << (result ? "[passed]" : "[failed]") << "  " << test.description << std::endl;
+
+        ok &= result;
     }
 
-    return 0;
+    return ok ? 0 : 1;
 }
