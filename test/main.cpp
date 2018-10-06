@@ -9,7 +9,8 @@
 
 auto test_methods = std::vector<test_method>{
     test_method(&mortonnd_lut::TestEncode, "Test LUT encoder configurations (dimension, field size, LUT entry size)."),
-    test_method(&mortonnd_bmi2::TestEncode, "Test BMI2 encoder configurations (dimension, field size).")
+    test_method(&mortonnd_bmi2::TestEncode, "Test BMI2 encoder configurations (dimension, field size)."),
+    test_method(&mortonnd_bmi2::TestDecode, "Test BMI2 decoder configurations (dimension, field size).")
 };
 
 int main(int argc, const char *argv[]) {

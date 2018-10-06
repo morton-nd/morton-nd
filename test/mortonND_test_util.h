@@ -56,6 +56,16 @@ static auto Apply(Func func, const std::tuple<Args...>& tuple) {
     return ApplyInternal(func, tuple, std::index_sequence_for<Args...>{});
 }
 
+template<typename Func, typename ...Tuples, size_t ...i>
+static auto ApplyEach(Func func, const std::tuple<Tuples...>& tups, std::index_sequence<i...>) {
+    return std::make_tuple(Apply(func, std::get<i>(tups))...);
+};
+
+template<typename Func, typename ...Tuple>
+static auto ApplyEach(Func func, const std::tuple<Tuple...>& tups) {
+    return ApplyEach(func, tups, std::index_sequence_for<Tuple...>{});
+};
+
 template<typename T, typename F, typename R, typename ...ToApply, T ...N>
 static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<size_t, 0>, std::tuple<ToApply...> out, std::integer_sequence<T, N...>) {
     return Reduce(reduce_func, Apply(function, std::tuple_cat(out, std::make_tuple(N)))...);
@@ -71,4 +81,37 @@ static auto ApplyIndexSeqs(F function, R reduce_func, std::integral_constant<siz
 template<typename T, T N, size_t M, typename F, typename R>
 static auto ApplyIndexSeqs(F function, R reduce_func) {
     return ApplyIndexSeqs(function, reduce_func, std::integral_constant<size_t, M - 1>{}, std::make_tuple<>(), std::make_integer_sequence<T, N>{});
+}
+
+template<typename ...Fields, size_t ...i>
+static auto Tail(std::tuple<Fields...> tup, std::index_sequence<0, i...>) {
+    return std::make_tuple(std::get<i>(tup)...);
+}
+
+template<typename ...Fields>
+static auto Tail(std::tuple<Fields...> tup) {
+    return Tail(tup, std::make_index_sequence<sizeof...(Fields)>{});
+}
+
+template<typename Field1, typename Field2>
+static auto Zip(std::tuple<Field1> tup1, std::tuple<Field2> tup2) {
+    return std::make_tuple(std::tuple_cat(tup1, tup2));
+}
+
+template<typename Field1, typename Field2, typename ...Fields1, typename ...Fields2>
+static auto Zip(std::tuple<Field1, Fields1...> tup1, std::tuple<Field2, Fields2...> tup2) {
+    return std::tuple_cat(
+        std::make_tuple(std::make_tuple(std::get<0>(tup1), std::get<0>(tup2))),
+        Zip(Tail(tup1), Tail(tup2))
+    );
+}
+
+template<typename ...T, size_t ...i>
+static auto RefTuple(std::tuple<T...>& tup, std::index_sequence<i...>) {
+    return std::make_tuple(std::ref(std::get<i>(tup))...);
+}
+
+template<typename ...T>
+static auto RefTuple(std::tuple<T...>& tup) {
+    return RefTuple(tup, std::index_sequence_for<T...>{});
 }

@@ -78,3 +78,47 @@ static bool TestEncodeFunction(const std::function<Ret(Fields...)> &function) {
     std::cout << " (Dimensions > 5. Falling back to simple test)" << std::endl;
     return TestEncodeFunction_Fast<FieldBits>(function);
 }
+
+template<typename T> struct TD;
+
+template<size_t FieldBits, size_t SliceBits = FieldBits < 4 ? FieldBits : 4, typename Ret, typename ...Fields>
+static bool TestDecodeFunction(const std::function<std::tuple<Fields...>(Ret)> &function) {
+    static const auto FieldCount = sizeof...(Fields);
+    static const auto EncodingBits = FieldCount * FieldBits;
+    static_assert(EncodingBits <= std::numeric_limits<uint64_t>::digits, "Control decoder cannot support > 64 bits.");
+    static_assert(std::numeric_limits<Ret>::digits >= EncodingBits, "'Ret' must support encoding width");
+
+    bool ok = true;
+
+    std::tuple<std::conditional_t<true, uint64_t, Fields>...> ctrl_decoding;
+    auto ctrl_ref_tup = RefTuple(ctrl_decoding);
+
+    for (size_t offset = 0; offset < (EncodingBits - FieldCount * SliceBits); offset++) {
+        for (Ret i = 0; i < Pow(2, SliceBits); i++) {
+            Ret encoding = i << offset;
+
+            // Concat encoding and ctrl_decoding references into parameter list and call control decoder
+            Apply(&control_decode<std::conditional_t<true, uint64_t, Fields>...>, std::tuple_cat(std::make_tuple(encoding), ctrl_ref_tup));
+
+            const auto decoding = function(encoding);
+
+            // TODO: error messages don't specify which encoding, or which field from that encoding are to blame
+            const auto compare = [](uint64_t control_field, Ret actual_field) -> bool {
+                if (actual_field != control_field) {
+                    std::cout << "  Mismatch when decoding";
+                    std::cout << "    Correct field: " << control_field << " Computed field: " << actual_field << std::endl;
+
+                    return false;
+                }
+                return true;
+            };
+
+            const auto zipped = Zip(ctrl_decoding, decoding);
+            const auto results = ApplyEach(compare, zipped);
+
+            ok &= Apply([](auto ...params) { return Reduce(std::logical_and<bool>{}, params...); }, results);
+        }
+    }
+
+    return ok;
+};
