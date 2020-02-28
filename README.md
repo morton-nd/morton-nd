@@ -1,7 +1,21 @@
-# Morton ND (N-dimensional)
+# Morton ND
 [![Build Status](https://travis-ci.org/kevinhartman/morton-nd.svg?branch=master)](https://travis-ci.org/kevinhartman/morton-nd) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-A C++14 header-only Morton encoding library for N dimensions. Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
+A header-only Morton encode/decode library (C++14) capable of encoding from and decoding to N-dimensional space. Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
+
+## Features
+All algorithms are **generated** at compile-time for the number of dimensions and field width used. This way, loops and branches are not required.
+
+### Encoding Support
+- any number of dimensions (e.g. `2D, 3D, 4D ... ND`).
+- built-in support for up to 128-bit native results (`__uint128_t`). Unlimited using a user-supplied "big integer" class.
+- `constexpr` encode method, allowing Morton encodings to be expressed at compile-time.
+
+### Decoder Support
+- any number of dimensions (bounded by native result width of 64).
+- built-in support for decoding up to 64-bit Morton codes.
+
+## Encoders and Decoders
 
 ### Hardware (Intel BMI2)
 Supports encoding and decoding in N dimensions, using Intel's BMI2 ISA extension (available in Haswell (Intel), Excavator (AMD) and newer).
@@ -41,7 +55,7 @@ Validation testing specific to MortonND is located in the `tests` folder, coveri
 Performance benchmark tests (and additional validation) for 2D and 3D use cases are located in a separate repository. See [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [Libmorton](https://github.com/Forceflow/libmorton), which integrates Morton ND into Libmorton's existing test framework.
 
 ### Benchmarks
-The snippets below show performance comparisons between various 3D configurations of Morton ND, as well as comparisons to the 3D algorithms found in Libmorton.
+The snippets below show performance comparisons between various 3D configurations of Morton ND. Comparisons to the 3D algorithms found in Libmorton are also included to demonstrate that Morton ND's generated algorithms are as efficient as hand-coded algorithms.
 
 To run these tests (and more!) on your own machine, clone the fork linked above.
 

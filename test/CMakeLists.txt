@@ -18,6 +18,9 @@ add_executable(morton-nd
 		mortonND_test.h
 		mortonND_BMI2_test.h
 		mortonND_LUT_encoder_test.h
-		variadic_placeholder.h
-		../morton-nd/include/mortonND_BMI2.h
-		../morton-nd/include/mortonND_LUT_encoder.h)
+		variadic_placeholder.h)
+
+target_include_directories(
+		morton-nd
+		PUBLIC ../morton-nd/include
+)

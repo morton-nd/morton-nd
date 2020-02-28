@@ -1,8 +1,7 @@
+#include <mortonND_LUT_encoder.h>
 #include "mortonND_LUT_encoder_test.h"
 #include "mortonND_test_common.h"
 #include "variadic_placeholder.h"
-
-#include "../morton-nd/include/mortonND_LUT_encoder.h"
 
 template<size_t FieldBits, typename Ret, typename ...Fields, size_t ...FieldIdx, size_t ...N>
 bool TestMortonNDLutSet(type_sequence<Fields...>, std::index_sequence<FieldIdx...>, std::index_sequence<N...>) {
