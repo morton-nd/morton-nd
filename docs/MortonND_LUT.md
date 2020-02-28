@@ -1,16 +1,16 @@
 # Morton ND LUT Usage Guide
 The `MortonNDLutEncoder` class encapsulates a LUT and provides a corresponding encode function. To instantiate it, you must specify the number of fields (N), the number of bits in each field (starting with the least significant bit), and the size of the LUT as template parameters. LUT size is expressed as the number of bits which will be looked up at a time (chunk size). For example, a LUT size of 16 yields a LUT with 2^16 entries, allowing 16 bit lookups.
 
-To create a `MortonNDLutEncoder` to accommodate N fields, each Q bits, parameterize it with `N` for `Fields`,  and `Q` for `FieldBits`. Use the third template parameter, `LutBits`, to specify the width of each lookup chunk.
+To create a `MortonNDLutEncoder` to accommodate `N` fields, each `Q` bits, parameterize it with `Dimensions = N`  and `FieldBits = Q`. Use the third template parameter, `LutBits`, to specify the width of each lookup chunk.
 
 At both extremes, a  `LutBits` value equal to `FieldBits` will result in a single lookup (1 chunk), whereas a value of `1` will result in `|FieldBits|` lookups (`|FieldBits|` chunks). For every additional chunk, additional bit manipulation operations will be required to combine results (increasing encode time), however, the `MortonNDLutEncoder` class was written with compiler optimization in mind and should not introduce additional function calls. The number of chunks which will be used based on your configuration is exposed as a static member field (`MortonNDLutEncoder<...>::ChunkCount`) to aid in performance debugging.
 
 While large LUTs offer the least bit manipulation overhead, they have a few drawbacks: compilation time increases significantly with larger values, they take up more space in the program image / executable, and they can be slower than smaller LUTs due to cache misses, depending on the domain's access pattern.
 
-<blockquote>
-<b>Note:</b></p>
-The max LUT size is 24 when compiled with GCC (8.1), 25 for Clang (900.0.39.2), and 10 for MSVC (1915). See the notes section below on various compiler limitations.
-</blockquote>
+>
+> **Note:**
+>
+> The max LUT size is 24 when compiled with GCC (8.1), 25 for Clang (900.0.39.2), and 10 for MSVC (1915). See the notes section below on various compiler limitations.
 
 ### Encoding
 Once you've instantiated a `MortonNDLutEncoder`, use its `Encode` function to encode inputs. The encode function is variadic, but will assert that exactly N fields are specified. Note that this function is also marked `constexpr` and can be used in compile-time expressions.

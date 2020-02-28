@@ -1,14 +1,14 @@
 # Morton ND BMI2 Usage Guide
 The `MortonNDBmi` class can be used to encode and decode `32` and `64` bit width fields in N dimensions using the BMI2 instruction set, available on modern x64 CPUs (Haswell (Intel), Excavator (AMD) and newer).
 
-Configure the class by providing the number of fields `Fields` followed by the result type `T` (either `uint32_t` or `uint64_t`) as template parameters.
+Configure the class by providing the number of fields `Dimensions` followed by the result type `T` (either `uint32_t` or `uint64_t`) as template parameters.
 
-The number of bits used (starting with the LSb) of each input field provided to the `Encode` function (and conversely, returned from the `Decode` function) is calculated as `⌊bits in T / Fields⌋`. Any higher-order bits will be ignored during an encode and will be `0` during a decode. For this reason, it is not necessary to mask off high-order bits.
+The number of bits used (starting with the LSb) of each input field provided to the `Encode` function (and conversely, returned from the `Decode` function) is calculated as `⌊bits in T / Fields⌋`. Any higher-order bits will be ignored during an encode and will be `0` during a decode. For this reason, **it is not necessary to mask off high-order bits.**
 
 For diagnostic purposes, the member `FieldBits` provides the number of bits considered in each field. For example, `MortonNDBmi<3, uint64_t>::FieldBits` will return `21`.
 
 ### Encoding
-The encode function is variadic, but will assert that exactly `Fields` fields are specified. 
+The encode function is variadic, but will assert that exactly `Dimensions` fields are specified. 
 
 ```c++
 // 32-bit 3D, 10 bits per field (MortonNDBmi<3, uint32_t>::FieldBits == 10)
