@@ -1,10 +1,13 @@
 # Morton ND
 [![Build Status](https://travis-ci.org/kevinhartman/morton-nd.svg?branch=master)](https://travis-ci.org/kevinhartman/morton-nd) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-A header-only Morton encode/decode library (C++14) capable of encoding from and decoding to N-dimensional space. Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
+A header-only Morton encode/decode library (C++14) capable of encoding from and decoding to N-dimensional space.
+
+All algorithms are **generated** at compile-time for the number of dimensions and field width used. This way, loops and branches are not required.
+
+Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
 
 ## Features
-All algorithms are **generated** at compile-time for the number of dimensions and field width used. This way, loops and branches are not required.
 
 ### Encoding Support
 - any number of dimensions (e.g. `2D, 3D, 4D ... ND`).
@@ -50,7 +53,7 @@ auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
 ```
 
 ## Testing and Performance
-Validation testing specific to MortonND is located in the `tests` folder, covering N-Dimensional configurations where N ∈ { 1, 2, 3, 4, 5, 8, 16, 32, 64 } for common field sizes, and is run as part of Travis CI.
+Validation testing specific to MortonND is located in the `/tests` folder, covering N-dimensional configurations where `N ∈ { 1, 2, 3, 4, 5, 8, 16, 32, 64 }` for common field sizes, and is run as part of Travis CI.
 
 Performance benchmark tests (and additional validation) for 2D and 3D use cases are located in a separate repository. See [this fork](https://github.com/kevinhartman/libmorton#fork-changes) of @Forceflow's [Libmorton](https://github.com/Forceflow/libmorton), which integrates Morton ND into Libmorton's existing test framework.
 
