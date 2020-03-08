@@ -9,7 +9,7 @@ Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as w
 
 ## Features
 
-### Encoding Support
+### Encoder Support
 - any number of dimensions (e.g. `2D, 3D, 4D ... ND`).
 - built-in support for up to 128-bit native results (`__uint128_t`). Unlimited using a user-supplied "big integer" class.
 - `constexpr` encode method, allowing Morton encodings to be expressed at compile-time.
