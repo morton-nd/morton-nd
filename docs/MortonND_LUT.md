@@ -15,7 +15,9 @@ While large LUTs offer the least bit manipulation overhead, they have a few draw
 ### Encoding
 Once you've instantiated a `MortonNDLutEncoder`, use its `Encode` function to encode inputs. The encode function is variadic, but will assert that exactly N fields are specified. Note that this function is also marked `constexpr` and can be used in compile-time expressions.
 
-The upper unused bits of the input fields provided to the Encode function must first be cleared. For example, if the encoder is parameterized with a `FieldBits` value of `10`, then any bits beyond the 10th LSb must be 0. This can be done easily by `and`ing the field with `MortonNDLutEncoder<...>::InputMask`.
+The upper unused bits of the input fields provided to the Encode function must first be cleared. For example, if the encoder is parameterized with a `FieldBits` value of `10`, then any bits beyond the 10th LSb must be 0. When `T` is a native integer type, this can be done easily by logically AND-ing the field with `MortonNDLutEncoder<...>::InputMask()`.
+
+> Note: `InputMask()` is not available when `T` is a user-defined class.
 
 ```c++
 // encoding in 32-bit 3D, 10 bits per field
@@ -28,7 +30,7 @@ const uint32_t field3 = 1025; // 1, but with a dirty upper bit (the 11th LSb is 
 // The encoding of 9, 5, and 1
 // 
 // Note that the first two fields (9 and 5) don't require masking, but field3 (1) does since an upper unused bit is set.
-auto encoding = MortonND_3D_32.Encode(field1, field2, field3 & MortonND_3D_32::InputMask);
+auto encoding = MortonND_3D_32.Encode(field1, field2, field3 & MortonND_3D_32::InputMask());
 ```
 
 ### Example: 2D encoding (N = 2)
