@@ -188,7 +188,7 @@ class MortonNDLutEncoder
     // should match that of standard C++ unsigned integral conversion.
     //
     // Note: this does not imply that T must fit within std::size_t.
-    static_assert(std::is_convertible<T, std::size_t>::value, "'T' must be convertible to std::size_t.");
+    static_assert(std::is_constructible<std::size_t, T>::value, "std::size_t must be constructible from 'T'");
 
 public:
     /**
@@ -284,7 +284,8 @@ private:
         // Note: an implicit conversion from T to std::size_t will occur during
         // table lookups, though precision loss will not occur (the value will
         // not exceed that of ChunkMask (which has type std::size_t)).
-        return (LookupField(field >> LutBits, args...) << (Dimensions * LutBits)) | T(LookupTable[field & ChunkMask]);
+        return (LookupField(field >> LutBits, args...) << (Dimensions * LutBits))
+            | T(LookupTable[std::size_t(field & ChunkMask)]);
     }
 
     constexpr T LookupField(T field, std::size_t) const
