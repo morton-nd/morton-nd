@@ -97,8 +97,8 @@ constexpr auto SplitByN<1>(std::size_t input, std::size_t) {
  *
  * This implementation supports up to 128-bit encodings using native integer types, but
  * can be also be used with user-provided encoding types (e.g. a BigInteger class) to support
- * encodings of any size. Note that user-provided encoding types must behave like standard C++
- * unsigned integers.
+ * encodings of any size. Note that user-provided encoding types must define the standard C++
+ * integral operators, and additionally must be able to construct a std::size_t.
  *
  * For most use-cases (i.e. when the encoding result can fit within a 64-bit unsigned integer),
  * it should be sufficient to omit the encoding type altogether (a suitable native unsigned
@@ -154,7 +154,9 @@ constexpr auto SplitByN<1>(std::size_t input, std::size_t) {
  *   If you need support for a result width > 64 but <= 128, you may be able to provide '__uint128_t'
  *   if your compiler supports it.
  *
- *   For > 128-bit results, a "BitInteger"-like class should work.
+ *   For > 128-bit results, a "BitInteger"-like class should work, but must support standard C++ integral
+ *   operators. A std::size_t must also be constructible from this type (e.g. T provides an explicit
+ *   conversion operator for std::size_t).
  *
  * @param Dimensions the number of fields (components) to encode.
  * @param FieldBits the number of bits in each input field, starting with the LSb. Higher bits are not cleared.
@@ -184,9 +186,7 @@ class MortonNDLutEncoder
     static_assert(!std::is_integral<T>::value || std::is_unsigned<T>::value,
         "'T' must be unsigned.");
 
-    // LUT lookups require conversion from T to std::size_t. T's implementation of this
-    // should match that of standard C++ unsigned integral conversion.
-    //
+    // LUT lookups require conversion from T to std::size_t.
     // Note: this does not imply that T must fit within std::size_t.
     static_assert(std::is_constructible<std::size_t, T>::value, "std::size_t must be constructible from 'T'");
 
@@ -281,7 +281,7 @@ private:
     template <typename ...Args>
     constexpr T LookupField(T field, std::size_t, Args... args) const
     {
-        // Note: an implicit conversion from T to std::size_t will occur during
+        // Note: an explicit conversion from T to std::size_t will occur during
         // table lookups, though precision loss will not occur (the value will
         // not exceed that of ChunkMask (which has type std::size_t)).
         return (LookupField(field >> LutBits, args...) << (Dimensions * LutBits))
