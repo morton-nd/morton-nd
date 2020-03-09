@@ -208,7 +208,10 @@ public:
      * A mask which can be used to clear the upper bits of encoder inputs prior to
      * a call to 'Encode', if they're expected to be dirty.
      */
-    static constexpr T InputMask = ~std::size_t(0) >> (64U - FieldBits);
+    constexpr T InputMask() const {
+        static_assert(std::is_integral<T>::value, "Input masks are only provided for integral types.");
+        return ~T(0) >> (std::numeric_limits<T>::digits - FieldBits);
+    }
 
     /**
      * The type selected internally for the LUT's value.
