@@ -309,7 +309,7 @@ private:
     }
 
     static constexpr std::size_t LutSize = ComputeLutSize();
-    static constexpr std::size_t ChunkMask = ~std::size_t(0) >> (64U - LutBits);
+    static constexpr std::size_t ChunkMask = ~std::size_t(0) >> (std::numeric_limits<std::size_t>::digits - LutBits);
     const std::array<LutValue, LutSize> LookupTable = BuildLut(std::make_index_sequence<LutSize>{});
 };
 
