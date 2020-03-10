@@ -1,15 +1,17 @@
-# Morton ND
-[![Build Status](https://travis-ci.org/kevinhartman/morton-nd.svg?branch=master)](https://travis-ci.org/kevinhartman/morton-nd) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <img src="z-order.png" alt="Z-Order Curve" height="250">
+</p>
 
-<h1 align="center">
-    <img height="250" src="z-order.png" alt="Z-Order Curve">
-</h1>
+<h1 align="center">Morton ND</h1>
 
 A header-only Morton encode/decode library (C++14) capable of encoding from and decoding to N-dimensional space.
 
 All algorithms are **generated** at compile-time for the number of dimensions and field width used. This way, loops and branches are not required.
 
 Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
+
+### Status
+[![Build Status](https://travis-ci.org/kevinhartman/morton-nd.svg?branch=master)](https://travis-ci.org/kevinhartman/morton-nd) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
