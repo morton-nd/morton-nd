@@ -24,7 +24,7 @@ endif()
 include(GNUInstallDirs)
 
 add_library(${MORTON_ND_LIBRARY_NAME} INTERFACE)
-add_library(${PROJECT_NAME}::${LIBRARY_TARGET_NAME} ALIAS ${MORTON_ND_LIBRARY_NAME})
+add_library(${PROJECT_NAME}::${MORTON_ND_LIBRARY_NAME} ALIAS ${MORTON_ND_LIBRARY_NAME})
 
 # Adding the install interface generator expression makes sure that the include
 # files are picked up from the GNUInstallDirs location when installed.
