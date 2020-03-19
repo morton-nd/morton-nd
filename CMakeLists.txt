@@ -30,7 +30,7 @@ add_library(${PROJECT_NAME}::${MORTON_ND_LIBRARY_NAME} ALIAS ${MORTON_ND_LIBRARY
 # files are picked up from the GNUInstallDirs location when installed.
 target_include_directories(
         ${MORTON_ND_LIBRARY_NAME}
-        INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include/morton-nd>
+        INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 target_compile_features(${MORTON_ND_LIBRARY_NAME} INTERFACE cxx_std_14)

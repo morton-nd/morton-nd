@@ -2,7 +2,7 @@
 #include "mortonND_test_util.h"
 #include "mortonND_test_common.h"
 
-#include <mortonND_BMI2.h>
+#include <morton-nd/mortonND_BMI2.h>
 
 template<typename Ret, typename ...Fields>
 bool TestMortonNDBmiEncoder(type_sequence<Fields...>) {
