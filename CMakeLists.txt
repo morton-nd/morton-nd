@@ -8,7 +8,8 @@ project("morton-nd"
         VERSION 3.0.0
         DESCRIPTION
         "A header-only constexpr library for fast Morton encoding/decoding in N dimensions."
-        HOMEPAGE_URL  "morton.codes")
+        HOMEPAGE_URL  "morton.codes"
+        LANGUAGES CXX)
 
 # Global variable for the project name as it should appear in file paths.
 set(MORTON_ND_LIBRARY_NAME "MortonND" CACHE INTERNAL "")
