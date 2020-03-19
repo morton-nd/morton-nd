@@ -137,7 +137,6 @@ The following metrics (sorted by random access time, ascending) were collected o
 Morton ND provides a CMake integration, making it easy to use from your CMake project.
 
 #### Adding the dependency
-
 If you've installed Morton ND to your `CMAKE_MODULE_PATH` (e.g. with [vcpkg](https://github.com/microsoft/vcpkg)), find and link it like this:
 
 ```cmake
