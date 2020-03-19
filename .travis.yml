@@ -1,13 +1,13 @@
-dist: trusty
+dist: bionic
 language: cpp
 compiler: gcc
-install: export CXX="g++-8"
+install: export CXX="g++-9"
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - g++-8
+    - g++-9
 notifications:
  email:
   on_success: never
