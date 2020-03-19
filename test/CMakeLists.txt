@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.9)
-project(morton-nd)
+cmake_minimum_required(VERSION 3.1...3.15)
+project(morton-nd-test)
 
-set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -mbmi2")
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconstexpr-steps=2147483647")
+# TODO: remove once this is fixed.
+if (NOT CMAKE_COMPILER_IS_GNUCXX)
+	message(FATAL_ERROR "Tests can only be built with GCC.")
 endif()
 
-add_executable(morton-nd
+add_executable(morton-nd-test
 		main.cpp
 		mortonND_BMI2_test.cpp
 		mortonND_LUT_encoder_test.cpp
@@ -20,7 +20,6 @@ add_executable(morton-nd
 		mortonND_LUT_encoder_test.h
 		variadic_placeholder.h)
 
-target_include_directories(
-		morton-nd
-		PUBLIC ../morton-nd/include
-)
+target_link_libraries(morton-nd-test PRIVATE MortonND)
+
+add_test(NAME morton-nd-test COMMAND morton-nd-test)

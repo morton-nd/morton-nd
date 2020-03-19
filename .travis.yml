@@ -1,16 +1,16 @@
-dist: trusty
+dist: bionic
 language: cpp
 compiler: gcc
-install: export CXX="g++-8"
+install: export CXX="g++-9"
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - g++-8
+    - g++-9
 notifications:
  email:
   on_success: never
   on_failure: always
 before_install: sudo apt-get update -qq
-script: mkdir test/build && cd test/build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make && ./morton-nd
+script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make all && make test
