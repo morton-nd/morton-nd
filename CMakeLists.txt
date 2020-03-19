@@ -11,7 +11,7 @@ project("morton-nd"
         HOMEPAGE_URL "morton.codes"
         LANGUAGES CXX)
 
-# Global variable for the project name as it should appear in file paths.
+# Global variable for the MortonND library name.
 set(MORTON_ND_LIBRARY_NAME "MortonND" CACHE INTERNAL "")
 
 # Include CTest only if this is the root cmake proj. Otherwise,
@@ -46,34 +46,34 @@ if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MORTON_ND_BUILD_TESTING) AND BUI
 endif()
 
 # locations are provided by GNUInstallDirs
-install(TARGETS ${MORTON_ND_LIBRARY_NAME} EXPORT ${MORTON_ND_LIBRARY_NAME}_Targets
+install(TARGETS ${MORTON_ND_LIBRARY_NAME} EXPORT ${PROJECT_NAME}_Targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Create MortonNDConfigVersion.cmake for library consumers.
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file("${MORTON_ND_LIBRARY_NAME}ConfigVersion.cmake"
+write_basic_package_version_file("${PROJECT_NAME}-config-version.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion)
 
 # Create MortonNDConfig.cmake from template for library consumers.
 configure_package_config_file(
-        "${PROJECT_SOURCE_DIR}/cmake/${MORTON_ND_LIBRARY_NAME}Config.cmake.in"
-        "${PROJECT_BINARY_DIR}/${MORTON_ND_LIBRARY_NAME}Config.cmake"
+        "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
         INSTALL_DESTINATION
         ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
 
 # Install MortonNDTargets.cmake
-install(EXPORT ${MORTON_ND_LIBRARY_NAME}_Targets
-        FILE ${MORTON_ND_LIBRARY_NAME}Targets.cmake
+install(EXPORT ${PROJECT_NAME}_Targets
+        FILE ${PROJECT_NAME}-targets.cmake
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
 
-# Install MortonNDConfig.cmake and MortonNDConfigVersion.cmake
+# Install morton-nd-config.cmake and morton-nd-config-version.cmake
 install(FILES
-        "${PROJECT_BINARY_DIR}/${MORTON_ND_LIBRARY_NAME}Config.cmake"
-        "${PROJECT_BINARY_DIR}/${MORTON_ND_LIBRARY_NAME}ConfigVersion.cmake"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
         DESTINATION
         ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
 
