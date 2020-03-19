@@ -148,7 +148,7 @@ target_link_libraries(main PRIVATE morton-nd::MortonND)
 Otherwise, if you're using Morton ND as a Git submodule:
 ```cmake
 add_subdirectory(morton-nd)
-target_link_libraries(libmorton_test PRIVATE morton-nd::MortonND)
+target_link_libraries(main PRIVATE morton-nd::MortonND)
 ```
 
 #### Including library headers
