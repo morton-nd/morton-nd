@@ -132,6 +132,33 @@ The following metrics (sorted by random access time, ascending) were collected o
     5764.171 ms 9157.460 ms : 64-bit (lib-morton)  For
 ```
 
+## Installation
+### CMake
+Morton ND provides a CMake integration, making it easy to use from your CMake project.
+
+#### Adding the dependency
+If you've installed Morton ND to your `CMAKE_MODULE_PATH` (e.g. with [vcpkg](https://github.com/microsoft/vcpkg)), find and link it like this:
+
+```cmake
+find_package(morton-nd CONFIG REQUIRED)
+target_link_libraries(main PRIVATE morton-nd::MortonND)
+```
+
+Otherwise, if you're using Morton ND as a Git submodule:
+```cmake
+add_subdirectory(morton-nd)
+target_link_libraries(main PRIVATE morton-nd::MortonND)
+```
+
+#### Including library headers
+By using `target_link_libraries(...)` as above, Morton ND's headers will be automatically available for use by your target:
+
+```c++
+// main.cpp
+#include <morton-nd/mortonND_BMI2.h>
+#include <morton-nd/mortonND_LUT_encoder.h>
+```
+
 ## Thanks
 * Jeroen Baert (@Forceflow)
   - [Morton encoding/decoding through bit interleaving: Implementations](https://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/)
