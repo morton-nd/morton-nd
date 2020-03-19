@@ -155,6 +155,7 @@ target_link_libraries(main PRIVATE morton-nd::MortonND)
 By using `target_link_libraries(...)` as above, Morton ND's headers will be automatically available for use by your target:
 
 ```c++
+// main.cpp
 #include <morton-nd/mortonND_BMI2.h>
 #include <morton-nd/mortonND_LUT_encoder.h>
 ```
