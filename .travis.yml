@@ -13,4 +13,4 @@ notifications:
   on_success: never
   on_failure: always
 before_install: sudo apt-get update -qq
-script: mkdir test/build && cd test/build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make && ./morton-nd
+script: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make all && make test
