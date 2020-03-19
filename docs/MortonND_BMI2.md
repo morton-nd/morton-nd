@@ -45,7 +45,7 @@ This section shows the x86_64 machine code generated for both encoding and decod
 ### 4D Encoding
 #### Program
 ```c++
-#include "mortonND_BMI2.h"
+#include <morton-nd/mortonND_BMI2.h>
 
 uint16_t x = 1, y = 2, z = 3, w = 4;
 int main() {
@@ -77,7 +77,7 @@ main:
 ### 4D Decoding
 #### Program
 ```c++
-#include "mortonND_BMI2.h"
+#include <morton-nd/mortonND_BMI2.h>
 
 uint32_t encoding = 1095;
 uint16_t x, y, z, w;
