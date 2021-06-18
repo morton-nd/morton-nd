@@ -8,6 +8,8 @@
 #ifndef mortonND_encoder_h
 #define mortonND_encoder_h
 
+#include "mortonND_LUT.h"
+
 #include <cmath>
 #include <array>
 #include <tuple>
@@ -33,11 +35,11 @@ namespace mortonnd {
  */
 template<size_t Bits>
 using MinInt =
-    typename std::conditional<(Bits <= 8), uint_least8_t,
-        typename std::conditional<(Bits <= 16), uint_least16_t,
-            typename std::conditional<(Bits <= 32), uint_least32_t,
-                typename std::conditional<(Bits <= 64), uint_least64_t, void()>
-                    ::type>::type>::type>::type;
+typename std::conditional<(Bits <= 8), uint_least8_t,
+    typename std::conditional<(Bits <= 16), uint_least16_t,
+        typename std::conditional<(Bits <= 32), uint_least32_t,
+            typename std::conditional<(Bits <= 64), uint_least64_t, void()>
+            ::type>::type>::type>::type;
 
 /**
  * Resolves to the fastest *non-implicitly-promotable* native unsigned
@@ -56,9 +58,9 @@ using MinInt =
  */
 template<size_t Bits, typename Default = void()>
 using FastInt =
-    typename std::conditional<(Bits <= 32), uint_fast32_t,
-        typename std::conditional<(Bits <= 64), uint_fast64_t, Default>
-            ::type>::type;
+typename std::conditional<(Bits <= 32), uint_fast32_t,
+    typename std::conditional<(Bits <= 64), uint_fast64_t, Default>
+    ::type>::type;
 
 /**
  * The mapping function used by lookup table generation.
@@ -166,29 +168,8 @@ constexpr auto SplitByN<1>(std::size_t input, std::size_t) {
 template<std::size_t Dimensions, std::size_t FieldBits, std::size_t LutBits, typename T = FastInt<Dimensions * FieldBits>>
 class MortonNDLutEncoder
 {
+    constexpr static MortonNDLutValidator<Dimensions, FieldBits, LutBits, T> validate {};
     static constexpr auto LutValueWidth = LutBits * Dimensions;
-
-    static_assert(Dimensions > 0, "'Dimensions' must be > 0.");
-    static_assert(FieldBits > 0, "'FieldBits' must be > 0. ");
-    static_assert(LutBits > 0, "'LutBits' must be > 0.");
-    static_assert(LutBits <= FieldBits, "'LutBits' must be <= 'FieldBits'.");
-
-    // Note: there's no technical reason for '32', but a larger value would be unreasonable.
-    static_assert(LutBits <= 32, "'LutBits' must be <= 32.");
-
-    static_assert(LutValueWidth <= 64, "'LutBits' * 'Dimensions' must be <= 64.");
-    static_assert(LutValueWidth <= std::numeric_limits<std::size_t>::digits,
-        "'LutBits' * 'Dimensions' must be <= width of std::size_t.");
-
-    static_assert(!std::is_integral<T>::value || (std::numeric_limits<T>::digits >= (Dimensions * FieldBits)),
-        "'T' must be able to hold 'Dimensions' * 'FieldBits' bits (the result size).");
-
-    static_assert(!std::is_integral<T>::value || std::is_unsigned<T>::value,
-        "'T' must be unsigned.");
-
-    // LUT lookups require conversion from T to std::size_t.
-    // Note: this does not imply that T must fit within std::size_t.
-    static_assert(std::is_constructible<std::size_t, T>::value, "std::size_t must be constructible from 'T'");
 
 public:
     /**

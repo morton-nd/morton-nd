@@ -12,6 +12,7 @@ add_executable(morton-nd-test
 		main.cpp
 		mortonND_BMI2_test.cpp
 		mortonND_LUT_encoder_test.cpp
+		mortonND_LUT_decoder_test.cpp
 		mortonND_test_util.h
 		mortonND_test_control.h
 		mortonND_test_common.h
