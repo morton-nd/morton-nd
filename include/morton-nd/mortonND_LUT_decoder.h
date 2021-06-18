@@ -123,8 +123,8 @@ private:
 
         auto chunkStartBit = chunkIndex * LutBits;
 
-        auto result = DecodeInternal(field >> LutBits, args...);
-        auto chunkLookupResult = LookupTable[std::size_t(field & ChunkMask)];
+        auto result = DecodeInternal(field, args...);
+        auto chunkLookupResult = LookupTable[std::size_t((field >> chunkStartBit) & ChunkMask)];
 
         for (std::size_t i = 0; i < Dimensions; i++) {
             auto fieldStartIdx = chunkStartBit + i;

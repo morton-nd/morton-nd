@@ -4,10 +4,17 @@
 #include "mortonND_test_common.h"
 #include "variadic_placeholder.h"
 
-bool mortonnd_lut::TestDecode() {
-    auto decoder = mortonnd::MortonNDLutDecoder<2, 8, 8>();
+constexpr auto Dimensions = 3;
+constexpr auto LutBits = 9;
+constexpr auto FieldBits = 9;
+constexpr auto decoder = mortonnd::MortonNDLutDecoder<Dimensions, FieldBits, LutBits>();
+constexpr auto Input = 3452356;
 
-    auto decoded = decoder.Decode(0b101010);
+bool mortonnd_lut::TestDecode() {
+    auto decoder = mortonnd::MortonNDLutDecoder<Dimensions, FieldBits, LutBits>();
+    auto mask = mortonnd::MortonNDLutDecoder<2, 8, 2>::ChunkMask;
+
+    auto decoded = decoder.Decode(Input & decoder.InputMask());
 
     std::cout << "LUT [";
     for (auto& field : decoded) {
@@ -17,8 +24,9 @@ bool mortonnd_lut::TestDecode() {
 
     std::cout << std::endl;
 
-    auto bmiDecode = mortonnd::MortonNDBmi<2, uint64_t>::Decode(0b101010);
-    std::cout << "BMI [" << std::get<0>(bmiDecode) << ", " << std::get<1>(bmiDecode) << ", " << "]";
+    auto bmiDecode = mortonnd::MortonNDBmi<Dimensions, uint64_t>::Decode(Input);
+    std::cout << "BMI [";
+    PrintTuple(bmiDecode, std::make_index_sequence<Dimensions> {});
     std::cout << std::endl;
 
     std::size_t index = 0;
