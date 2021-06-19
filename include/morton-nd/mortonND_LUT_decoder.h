@@ -99,33 +99,47 @@ private:
         return DecodeInternal(field, I ...);
     }
 
-//    template<typename...Args>
-//    constexpr T EncodeInternal(T field1, Args... fields) const
-//    {
-//        return (EncodeInternal(fields...) << 1U) | LookupField(field1, std::make_index_sequence<ChunkCount>{});
-//    }
-//
-//    constexpr T EncodeInternal(T field) const
-//    {
-//        return LookupField(field, std::make_index_sequence<ChunkCount>{});
-//    }
+    template<std::size_t ChunkStartBit, typename ResultTuple, std::size_t ...I>
+    constexpr auto UpdateResults(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::index_sequence<I...>) const {
+        UpdateResults<ChunkStartBit>(result, chunkLookupResult, I...);
+    }
 
-//    template <size_t ...I>
-//    constexpr std::array<T, Dimensions> LookupField(T field, std::index_sequence<I...>) const {
-//        return LookupField(field, I...);
-//    }
+    template<std::size_t ChunkStartBit, typename ResultTuple, typename ...Args>
+    constexpr void UpdateResults(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::size_t, Args... args) const {
+        UpdateField<ChunkStartBit, sizeof...(Args)>(result, chunkLookupResult);
+        UpdateResults<ChunkStartBit>(result, chunkLookupResult, args...);
+    }
+
+    template<std::size_t ChunkStartBit, typename ResultTuple, typename ...Args>
+    constexpr void UpdateResults(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::size_t) const {
+        UpdateField<ChunkStartBit, 0>(result, chunkLookupResult);
+    }
+
+    template<std::size_t ChunkStartBit, std::size_t SourceIndex, typename ResultTuple>
+    constexpr void UpdateField(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult) const {
+        constexpr auto FieldStartIndex = ChunkStartBit + SourceIndex;
+        constexpr auto DestIndex = FieldStartIndex % Dimensions;
+        constexpr auto InsertOffset = FieldStartIndex / Dimensions;
+        std::get<DestIndex>(result) = (((T)chunkLookupResult[SourceIndex]) << InsertOffset) |((T)std::get<DestIndex>(result));
+    }
 
     template <typename ...Args>
     constexpr auto DecodeInternal(T field, std::size_t, Args... args) const
     {
-//        auto chunkIndex = ChunkCount - sizeof...(args);
-        auto chunkIndex = sizeof...(args);
-
-        auto chunkStartBit = chunkIndex * LutBits;
+        auto constexpr ChunkIndex = sizeof...(args);
+        auto constexpr ChunkStartBit = ChunkIndex * LutBits;
 
         auto result = DecodeInternal(field, args...);
-        auto chunkLookupResult = LookupTable[std::size_t((field >> chunkStartBit) & ChunkMask)];
+        auto chunkLookupResult = LookupTable[std::size_t((field >> ChunkStartBit) & ChunkMask)];
+        UpdateResults<ChunkStartBit>(result, chunkLookupResult, std::make_index_sequence<Dimensions>{});
 
+//        for (std::size_t i = 0; i < Dimensions; i++) {
+//            auto fieldStartIdx = ChunkStartBit + i;
+//            auto destIdx = fieldStartIdx % Dimensions;
+//            auto insertOffset = fieldStartIdx / Dimensions;
+//            result[destIdx] = (chunkLookupResult[i] << insertOffset) | result[destIdx];
+//        }
+/*
         for (std::size_t i = 0; i < Dimensions; i++) {
             auto fieldStartIdx = chunkStartBit + i;
             auto destIdx = fieldStartIdx % Dimensions;
@@ -163,6 +177,7 @@ private:
             // Need to determine which components we need to write a table lookup to.
             result[destIdx] = (chunkLookupResult[i] << insertOffset) | result[destIdx];
         }
+        */
 
         return result;
     }
