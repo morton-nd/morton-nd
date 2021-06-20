@@ -11,14 +11,13 @@ endif()
 add_executable(morton-nd-test
 		main.cpp
 		mortonND_BMI2_test.cpp
-		mortonND_LUT_encoder_test.cpp
-		mortonND_LUT_decoder_test.cpp
+		mortonND_LUT_test.cpp
 		mortonND_test_util.h
 		mortonND_test_control.h
 		mortonND_test_common.h
 		mortonND_test.h
 		mortonND_BMI2_test.h
-		mortonND_LUT_encoder_test.h
+		mortonND_LUT_test.h
 		variadic_placeholder.h)
 
 target_link_libraries(morton-nd-test PRIVATE MortonND)
