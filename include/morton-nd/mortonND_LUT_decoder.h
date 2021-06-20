@@ -182,10 +182,15 @@ private:
         return result;
     }
 
+    template <typename Array, std::size_t ...I>
+    constexpr auto CreateTuple(Array arr, std::index_sequence<I...>) const {
+        return std::make_tuple((T)arr[I]...);
+    }
+
     constexpr auto DecodeInternal(T field, std::size_t) const
     {
         // This is the 0th chunk, so it lines up with the decode result array.
-        return LookupTable[field & ChunkMask];
+        return CreateTuple(LookupTable[field & ChunkMask], std::make_index_sequence<Dimensions>{});
     }
 
     // NOTE: this is implemented at namespace level due to CWG727.
