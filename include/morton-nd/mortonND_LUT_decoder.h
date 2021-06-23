@@ -18,7 +18,6 @@
 
 namespace mortonnd {
 
-// TODO: make sure we won't ever shift input >= digits of size_t
 template<std::size_t BitsRemaining>
 constexpr auto JoinByN(std::size_t input, std::size_t fields) {
     return (JoinByN<BitsRemaining - 1>(input >> fields, fields) << 1U) | (input & 1U);
@@ -36,13 +35,8 @@ template<std::size_t Dimensions, std::size_t FieldBits, std::size_t LutBits, typ
 class MortonNDLutDecoder
 {
     constexpr static MortonNDLutValidator<Dimensions, FieldBits, LutBits, T> validate {};
-
-    // TODO:
-    //  - THis should be used instead, since elements don't need to hold full size of fields,
-    //    but for now, we use field size for simplicity.
-    //  - Validate math.
-    static constexpr auto LutValueWidth = (LutBits + Dimensions - 1) / Dimensions;
-    //static constexpr auto LutValueWidth = FieldBits;
+    static constexpr auto MortonCodeWidth = FieldBits * Dimensions;
+    static constexpr auto LutValueWidth = LutBits / Dimensions + (LutBits % Dimensions != 0);
 
 public:
     /**
@@ -56,7 +50,7 @@ public:
      *
      * For debugging / perf tuning.
      */
-    static constexpr std::size_t ChunkCount = 1 + ((FieldBits * Dimensions - 1) / LutBits);
+    static constexpr std::size_t ChunkCount = MortonCodeWidth / LutBits + (MortonCodeWidth % LutBits != 0);
 
     /**
      * A mask which can be used to clear the upper bits of the input Morton code prior to
@@ -64,11 +58,11 @@ public:
      */
     constexpr T InputMask() const {
         static_assert(std::is_integral<T>::value, "Input masks are only provided for integral types.");
-        return ~T(0) >> (std::numeric_limits<T>::digits - (FieldBits * Dimensions));
+        return ~T(0) >> (std::numeric_limits<T>::digits - MortonCodeWidth);
     }
 
     /**
-     * The type selected internally LUT entry array values.
+     * The type selected internally for LUT entry array values.
      * I.e. Each LUT entry is of type std::array<LutValue, Dimensions>.
      *
      * For debugging / perf tuning.
@@ -87,6 +81,11 @@ public:
      */
     constexpr MortonNDLutDecoder() = default;
 
+    /**
+     * Decode a Morton code.
+     * @param input The Morton code.
+     * @return The decoded components of 'input' as an std::tuple.
+     */
     constexpr auto Decode(T input) const
     {
         return DecodeInternal(input, std::make_index_sequence<ChunkCount>{});
@@ -121,12 +120,12 @@ private:
      * Algorithm steps:
      *   - Split 'field' into chunks of width 'LutBits'.
      *   - For each chunk, look up the chunk in 'LookupTable', which returns an array of
-     *      its de-interleaved components. E.g.: LookupTable[yxzyxzyx] => [xxx, yyy, zz]
-     *        - For each component,
-     *           - Determine the destination field to which the component belongs. This is calculated statically
-     *             as (ChunkStartBit + ComponentIndex) % Dimensions.
-     *           - Inject the component's bits at the current write offset for the destination field.
-     *             This is calculated statically as (ChunkStartBit + ComponentIndex) / Dimensions.
+     *     its de-interleaved components. E.g.: LookupTable[yxzyxzyx] => [xxx, yyy, zz]
+     *     - For each component,
+     *       - Determine the destination field to which the component belongs:
+     *         (ChunkStartBit + ComponentIndex) % Dimensions.
+     *       - Inject the component's bits at the current write offset for the destination field:
+     *         (ChunkStartBit + ComponentIndex) / Dimensions.
      *
      * Example:
      *   Dimensions: 3
@@ -192,10 +191,10 @@ private:
      *
      *   Final result: (0xxxx, yyyy, zzzz)
      *                  ^      ^     ^
-     * @tparam Args
-     * @param field
-     * @param args
-     * @return
+     * @tparam Args The type sequence corresponding to 'args'.
+     * @param field The Morton code to decode.
+     * @param args The tail of the chunk index sequence, used to pump the template.
+     * @return The decoded components, as an 'std::tuple'.
      */
     template <typename ...Args>
     constexpr auto DecodeInternal(T field, std::size_t, Args... args) const
@@ -219,11 +218,6 @@ private:
         return result;
     }
 
-    template <size_t ...I>
-    constexpr auto DecodeInternal(T field, std::index_sequence<I...>) const {
-        return DecodeInternal(field, I ...);
-    }
-
     template <typename Array, std::size_t ...I>
     constexpr auto CreateTuple(Array arr, std::index_sequence<I...>) const {
         return std::make_tuple((T)arr[I]...);
@@ -233,6 +227,11 @@ private:
     {
         // This is the 0th chunk, so it lines up with the decode result array.
         return CreateTuple(LookupTable[field & ChunkMask], std::make_index_sequence<Dimensions>{});
+    }
+
+    template <size_t ...I>
+    constexpr auto DecodeInternal(T field, std::index_sequence<I...>) const {
+        return DecodeInternal(field, I ...);
     }
 
     // NOTE: this is implemented at namespace level due to CWG727.
