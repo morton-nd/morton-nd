@@ -18,6 +18,20 @@
 
 namespace mortonnd {
 
+/**
+ * The mapping function used by lookup table entry generation.
+ *
+ * Extract every 'fields' bits from 'input', depositing each to the
+ * result, filling from LSb to MSb without gaps.
+ *
+ * Example ('fields' == 3):
+ *   73 (dec) => 1001001 (bin) => 111 (bin) => 7 (dec)
+ *
+ * @tparam BitsRemaining the number of least-significant-bits left to process.
+ * @param input the source integer.
+ * @param fields the stride between bits to extract from the source.
+ * @return the extracted component of 'input'.
+ */
 template<std::size_t BitsRemaining>
 constexpr auto JoinByN(std::size_t input, std::size_t fields) {
     return (JoinByN<BitsRemaining - 1>(input >> fields, fields) << 1U) | (input & 1U);
@@ -31,6 +45,74 @@ constexpr auto JoinByN<1>(std::size_t input, std::size_t) {
     return input & 1U;
 }
 
+/**
+ * A fast portable N-dimensional LUT-based Morton decoder.
+ *
+ * This class literal (constexpr class) generates a suitable LUT (based on template parameters)
+ * along with an efficient (i.e. no func calls, no branches) Morton decoding algorithm.
+ *
+ * This implementation supports up to 128-bit Morton codes using native integer types, but
+ * can be also be used with user-provided encoding types (e.g. a BigInteger class) to support
+ * encodings of any size. Note that user-provided encoding types must define the standard C++
+ * integral operators, and additionally must be able to construct a std::size_t.
+ *
+ * Configuration:
+ *
+ * Dimensions
+ *   You must define the number of dimensions with which this decoder instance
+ *   will be used via template parameter. The resulting instance's 'Decode' function will
+ *   return an std::tuple of this cardinality.
+ *
+ * FieldBits
+ *   The number of bits (least-significant) in each decoded field.
+ *   For example, if decoding a 3D Morton code of width 30, this would be 10. While other Morton
+ *   decoding libraries do not require this information, Morton ND uses it to perform
+ *   compile-time optimizations, such as early termination.
+ *
+ *   WARNING: results will be incorrect if the decoder input width exceeds FieldBits * Dimensions.
+ *
+ * LutBits
+ *   The LUT lookup width (in bits) must be provided as a template parameter. This is perhaps
+ *   the most interesting parameter, since it allows the generated LUT and algorithm to be tuned
+ *   for a particular CPU target and application.
+ *
+ *   This value dictates the size of the generated lookup table, as well as the number of lookups
+ *   performed by the generated 'Decode' function.
+ *
+ *   LUT size in memory will be (appx.):    2^^LutBits * sizeof(std::array<LutValue, Dimensions>)
+ *   Look-ups per Decode call:              ChunkCount
+ *
+ *   Note: ChunkCount and LutValue are available as static members for debugging.
+ *
+ *   To properly tune this value, consider the following:
+ *
+ *   - A larger value will result in an exponentially larger LUT and exponentially higher
+ *     compilation times. For most use cases, 'LutBits' should not exceed 16.
+ *   - A larger value will result in an 'Decode' function with fewer operations,
+ *     iff it reduces ChunkCount (inspect this with the ChunkCount static member).
+ *   - A 'Decode' function with minimal operations (see above) will not necessarily out-perform
+ *     one that does more (smaller LUT) due to CPU caching. Smaller LUT configurations tend to do
+ *     better for applications which call 'Decode' with random inputs.
+ *
+ *   For performance critical applications, run benchmarks.
+ *
+ * T
+ *   The type of the Morton code to decode, as well as the element type of decoded fields in the
+ *   returned std::tuple. This is optional (the fastest type which can fit the Morton code will be
+ *   selected automatically), unless it would be too big to fit in a 64-bit unsigned integer.
+ *
+ *   If you need support for a result width > 64 but <= 128, you may be able to provide '__uint128_t'
+ *   if your compiler supports it.
+ *
+ *   For > 128-bit results, a "BitInteger"-like class should work, but must support standard C++ integral
+ *   operators. A std::size_t must also be constructible from this type (e.g. T provides an explicit
+ *   conversion operator for std::size_t).
+ *
+ * @param Dimensions the number of fields (components) to decode.
+ * @param FieldBits the number of bits in each input field, starting with the LSb.
+ * @param LutBits the number of bits for the LUT.
+ * @param T the type of the Morton code to decode, as well as the tuple types of the result.
+ */
 template<std::size_t Dimensions, std::size_t FieldBits, std::size_t LutBits, typename T = FastInt<Dimensions * FieldBits>>
 class MortonNDLutDecoder
 {
