@@ -116,9 +116,29 @@ constexpr auto JoinByN<1>(std::size_t input, std::size_t) {
 template<std::size_t Dimensions, std::size_t FieldBits, std::size_t LutBits, typename T = FastInt<Dimensions * FieldBits>>
 class MortonNDLutDecoder
 {
-    constexpr static MortonNDLutValidator<Dimensions, FieldBits, LutBits, T> validate {};
     static constexpr auto MortonCodeWidth = FieldBits * Dimensions;
     static constexpr auto LutValueWidth = LutBits / Dimensions + (LutBits % Dimensions != 0);
+
+    static_assert(Dimensions > 0, "'Dimensions' must be > 0.");
+    static_assert(FieldBits > 0, "'FieldBits' must be > 0. ");
+    static_assert(LutBits > 0, "'LutBits' must be > 0.");
+    static_assert(LutBits <= MortonCodeWidth, "'LutBits' must be <= computed 'MortonCodeWidth'.");
+
+    // Note: there's no technical reason for '32', but a larger value would be unreasonable.
+    static_assert(LutBits <= 32, "'LutBits' must be <= 32.");
+
+    static_assert(LutValueWidth <= std::numeric_limits<std::size_t>::digits,
+        "Computed 'LutValueWidth' must be <= width of std::size_t.");
+
+    static_assert(!std::is_integral<T>::value || (std::numeric_limits<T>::digits >= (Dimensions * FieldBits)),
+        "'T' must be able to hold 'Dimensions' * 'FieldBits' bits (the Morton code size).");
+
+    static_assert(!std::is_integral<T>::value || std::is_unsigned<T>::value,
+        "'T' must be unsigned.");
+
+    // LUT lookups require conversion from T to std::size_t.
+    // Note: this does not imply that T must fit within std::size_t.
+    static_assert(std::is_constructible<std::size_t, T>::value, "std::size_t must be constructible from 'T'");
 
 public:
     /**

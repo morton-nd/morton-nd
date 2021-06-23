@@ -59,35 +59,6 @@ using FastInt =
     typename std::conditional<(Bits <= 32), uint_fast32_t,
         typename std::conditional<(Bits <= 64), uint_fast64_t, Default>
             ::type>::type;
-
-
-template<std::size_t Dimensions, std::size_t FieldBits, std::size_t LutBits, typename T = FastInt<Dimensions * FieldBits>>
-struct MortonNDLutValidator
-{
-    static constexpr auto LutValueWidth = LutBits * Dimensions;
-
-    static_assert(Dimensions > 0, "'Dimensions' must be > 0.");
-    static_assert(FieldBits > 0, "'FieldBits' must be > 0. ");
-    static_assert(LutBits > 0, "'LutBits' must be > 0.");
-    static_assert(LutBits <= FieldBits, "'LutBits' must be <= 'FieldBits'.");
-
-    // Note: there's no technical reason for '32', but a larger value would be unreasonable.
-    static_assert(LutBits <= 32, "'LutBits' must be <= 32.");
-
-    static_assert(LutValueWidth <= 64, "'LutBits' * 'Dimensions' must be <= 64.");
-    static_assert(LutValueWidth <= std::numeric_limits<std::size_t>::digits,
-        "'LutBits' * 'Dimensions' must be <= width of std::size_t.");
-
-    static_assert(!std::is_integral<T>::value || (std::numeric_limits<T>::digits >= (Dimensions * FieldBits)),
-        "'T' must be able to hold 'Dimensions' * 'FieldBits' bits (the result size).");
-
-    static_assert(!std::is_integral<T>::value || std::is_unsigned<T>::value,
-        "'T' must be unsigned.");
-
-    // LUT lookups require conversion from T to std::size_t.
-    // Note: this does not imply that T must fit within std::size_t.
-    static_assert(std::is_constructible<std::size_t, T>::value, "std::size_t must be constructible from 'T'");
-};
 }
 
 #endif
