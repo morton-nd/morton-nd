@@ -2,7 +2,7 @@
 //  mortonND_LUT_decoder.h
 //  morton-nd
 //
-//  Copyright (c) 2015 Kevin Hartman.
+//  Copyright (c) 2021 Kevin Hartman.
 //
 
 #ifndef mortonND_decoder_h
@@ -41,8 +41,8 @@ class MortonNDLutDecoder
     //  - THis should be used instead, since elements don't need to hold full size of fields,
     //    but for now, we use field size for simplicity.
     //  - Validate math.
-    //static constexpr auto LutValueWidth = (LutBits + Dimensions - 1) / Dimensions;
-    static constexpr auto LutValueWidth = FieldBits;
+    static constexpr auto LutValueWidth = (LutBits + Dimensions - 1) / Dimensions;
+    //static constexpr auto LutValueWidth = FieldBits;
 
 public:
     /**
@@ -51,16 +51,16 @@ public:
     typedef T type;
 
     /**
-     * The number of chunks into which each input field is partitioned. This is also
-     * the number of LUT lookups performed for each field.
+     * The number of chunks into which the input Morton code is partitioned,
+     * i.e. the number of LUT lookups performed when decoding.
      *
      * For debugging / perf tuning.
      */
     static constexpr std::size_t ChunkCount = 1 + ((FieldBits * Dimensions - 1) / LutBits);
 
     /**
-     * A mask which can be used to clear the upper bits of encoder inputs prior to
-     * a call to 'Encode', if they're expected to be dirty.
+     * A mask which can be used to clear the upper bits of the input Morton code prior to
+     * a call to 'Decode', if they're expected to be dirty.
      */
     constexpr T InputMask() const {
         static_assert(std::is_integral<T>::value, "Input masks are only provided for integral types.");
@@ -68,8 +68,8 @@ public:
     }
 
     /**
-     * The type selected internally for the LUT's value.
-     * Will always accommodate Dimensions * LutBits bits.
+     * The type selected internally LUT entry array values.
+     * I.e. Each LUT entry is of type std::array<LutValue, Dimensions>.
      *
      * For debugging / perf tuning.
      */
@@ -93,36 +93,110 @@ public:
     }
 
 private:
-
-    template <size_t ...I>
-    constexpr auto DecodeInternal(T field, std::index_sequence<I...>) const {
-        return DecodeInternal(field, I ...);
-    }
-
     template<std::size_t ChunkStartBit, typename ResultTuple, std::size_t ...I>
-    constexpr auto UpdateResults(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::index_sequence<I...>) const {
-        UpdateResults<ChunkStartBit>(result, chunkLookupResult, I...);
+    constexpr auto MapComponents(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::index_sequence<I...>) const {
+        MapComponents<ChunkStartBit>(result, chunkLookupResult, I...);
     }
 
     template<std::size_t ChunkStartBit, typename ResultTuple, typename ...Args>
-    constexpr void UpdateResults(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::size_t, Args... args) const {
-        UpdateField<ChunkStartBit, sizeof...(Args)>(result, chunkLookupResult);
-        UpdateResults<ChunkStartBit>(result, chunkLookupResult, args...);
+    constexpr void MapComponents(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::size_t, Args... args) const {
+        InjectBits<ChunkStartBit, sizeof...(Args)>(result, chunkLookupResult);
+        MapComponents<ChunkStartBit>(result, chunkLookupResult, args...);
     }
 
     template<std::size_t ChunkStartBit, typename ResultTuple, typename ...Args>
-    constexpr void UpdateResults(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::size_t) const {
-        UpdateField<ChunkStartBit, 0>(result, chunkLookupResult);
+    constexpr void MapComponents(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult, std::size_t) const {
+        InjectBits<ChunkStartBit, 0>(result, chunkLookupResult);
     }
 
     template<std::size_t ChunkStartBit, std::size_t SourceIndex, typename ResultTuple>
-    constexpr void UpdateField(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult) const {
+    constexpr void InjectBits(ResultTuple& result, const std::array<LutValue, Dimensions>& chunkLookupResult) const {
         constexpr auto FieldStartIndex = ChunkStartBit + SourceIndex;
         constexpr auto DestIndex = FieldStartIndex % Dimensions;
         constexpr auto InsertOffset = FieldStartIndex / Dimensions;
         std::get<DestIndex>(result) = (((T)chunkLookupResult[SourceIndex]) << InsertOffset) |((T)std::get<DestIndex>(result));
     }
 
+    /**
+     * Algorithm steps:
+     *   - Split 'field' into chunks of width 'LutBits'.
+     *   - For each chunk, look up the chunk in 'LookupTable', which returns an array of
+     *      its de-interleaved components. E.g.: LookupTable[yxzyxzyx] => [xxx, yyy, zz]
+     *        - For each component,
+     *           - Determine the destination field to which the component belongs. This is calculated statically
+     *             as (ChunkStartBit + ComponentIndex) % Dimensions.
+     *           - Inject the component's bits at the current write offset for the destination field.
+     *             This is calculated statically as (ChunkStartBit + ComponentIndex) / Dimensions.
+     *
+     * Example:
+     *   Dimensions: 3
+     *   Input:      zyxzyxzyxzyx
+     *   LutBits:    5
+     *
+     *   Chunks: [ yxzyx, xzyxz, zy ]
+     *
+     *   - Chunks[0]:
+     *     LookupResult = Lookup[yxzyx] => [xx, yy, z]:
+     *     - LookupResult[0] => xx
+     *       DestIndex =   (0 + 0) % 3 => 0
+     *       InsertIndex = (0 + 0) / 3 => 0
+     *       In English: Write xx at bit 0 of field 0.
+     *
+     *     - LookupResult[1] => yy
+     *       DestIndex =   (0 + 1) % 3 => 1
+     *       InsertIndex = (0 + 1) / 3 => 0
+     *       In English: Write yy at bit 0 of field 1.
+     *
+     *     - LookupResult[2] => z
+     *       DestIndex =   (0 + 2) % 3 => 2
+     *       InsertIndex = (0 + 2) / 3 => 0
+     *       In English: Write z at bit 0 of field 2.
+     *
+     *   Result so far: (xx, yy, z)
+     *                   ^^  ^^  ^
+     *   - Chunks[1]:
+     *     LookupResult = Lookup[xzyxz] => [zz, xx, y]:
+     *     - LookupResult[0] => zz
+     *       DestIndex =   (5 + 0) % 3 => 2
+     *       InsertIndex = (5 + 0) / 3 => 1
+     *       In English: Write zz at bit 1 of field 2.
+     *
+     *     - LookupResult[1] => xx
+     *       DestIndex =   (5 + 1) % 3 => 0
+     *       InsertIndex = (5 + 1) / 3 => 2
+     *       In English: Write xx at bit 2 of field 0.
+     *
+     *     - LookupResult[2] => y
+     *       DestIndex =   (5 + 2) % 3 => 1
+     *       InsertIndex = (5 + 2) / 3 => 2
+     *       In English: Write y at bit 2 of field 1.
+     *
+     *   Result so far: (xxxx, yyy, zzz)
+     *                   ^^    ^    ^^
+     *   - Chunks[2]:
+     *     LookupResult = Lookup[000zy] => [y, z, 0]:
+     *     - LookupResult[0] => y
+     *       DestIndex =   (10 + 0) % 3 => 1
+     *       InsertIndex = (10 + 0) / 3 => 3
+     *       In English: Write y at bit 3 of field 1.
+     *
+     *     - LookupResult[1] => z
+     *       DestIndex =   (10 + 1) % 3 => 2
+     *       InsertIndex = (10 + 1) / 3 => 3
+     *       In English: Write z at bit 3 of field 2.
+     *
+     *     - LookupResult[2] => 0
+     *       DestIndex =   (10 + 2) % 3 => 0
+     *       InsertIndex = (10 + 2) / 3 => 4
+     *       In English: Write 0 at bit 4 of field 0.
+     *
+     *   Final result: (0xxxx, yyyy, zzzz)
+     *                  ^      ^     ^
+     * @tparam Args
+     * @param field
+     * @param args
+     * @return
+     */
     template <typename ...Args>
     constexpr auto DecodeInternal(T field, std::size_t, Args... args) const
     {
@@ -131,55 +205,23 @@ private:
 
         auto result = DecodeInternal(field, args...);
         auto chunkLookupResult = LookupTable[std::size_t((field >> ChunkStartBit) & ChunkMask)];
-        UpdateResults<ChunkStartBit>(result, chunkLookupResult, std::make_index_sequence<Dimensions>{});
 
-//        for (std::size_t i = 0; i < Dimensions; i++) {
-//            auto fieldStartIdx = ChunkStartBit + i;
-//            auto destIdx = fieldStartIdx % Dimensions;
-//            auto insertOffset = fieldStartIdx / Dimensions;
-//            result[destIdx] = (chunkLookupResult[i] << insertOffset) | result[destIdx];
-//        }
-/*
-        for (std::size_t i = 0; i < Dimensions; i++) {
-            auto fieldStartIdx = chunkStartBit + i;
-            auto destIdx = fieldStartIdx % Dimensions;
-
-            // How many times have we seen this component given its stride, the number of chunks we've seen so far, and the width of each chunk?
-            // (ChunkIndex * LutBits) / Dimensions
-
-            // Example:
-            // Dimensions = 3
-            // LutBits = 2
-            // ChunkIdx = 2
-            // Code = z yx [zy] xz yx
-            // LUT = [
-            //   []
-            // ]
-            // Results:
-            //   chunkStartBit = 2 * 2 = 4
-            //   Dimension 0:
-            //     fieldStartIdx = 4 + 0 = 4
-            //     destIdx = 4 % 3 = 1
-            //     insert = 4 / 2 = 2 (should this be 1?)
-            //     "" = (2 * 2) / 3 = 4/3 = 1
-            //   Dimension 1:
-            //     fieldStartIdx = 4 + 1 = 5
-            //     destIdx = 5 % 3 = 2
-            //     insert = 5 / 2 = 2
-            //     "" = 4 / 3
-            //   Dimension 2:
-            //     fieldStartIdx = 4 + 2 = 6
-            //     destIdx = 6 % 3 = 0
-            //     insert = 6 / 2 = 3
-            auto insertOffset = fieldStartIdx / Dimensions;
-
-            // When writing to dest, write and shift over unless you're least significant, then, just write.
-            // Need to determine which components we need to write a table lookup to.
-            result[destIdx] = (chunkLookupResult[i] << insertOffset) | result[destIdx];
-        }
-        */
+        // 'MapComponents' equivalent logic:
+        //
+        // for (std::size_t i = 0; i < Dimensions; i++) {
+        //     auto fieldStartIdx = ChunkStartBit + i;
+        //     auto destIdx = fieldStartIdx % Dimensions;
+        //     auto insertOffset = fieldStartIdx / Dimensions;
+        //     result[destIdx] = (chunkLookupResult[i] << insertOffset) | result[destIdx];
+        // }
+        MapComponents<ChunkStartBit>(result, chunkLookupResult, std::make_index_sequence<Dimensions>{});
 
         return result;
+    }
+
+    template <size_t ...I>
+    constexpr auto DecodeInternal(T field, std::index_sequence<I...>) const {
+        return DecodeInternal(field, I ...);
     }
 
     template <typename Array, std::size_t ...I>
