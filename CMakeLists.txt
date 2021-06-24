@@ -5,7 +5,7 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 
 project("morton-nd"
-        VERSION 3.0.0
+        VERSION 4.0.0
         DESCRIPTION
         "A header-only constexpr library for fast Morton encoding/decoding in N dimensions."
         HOMEPAGE_URL "morton.codes"
