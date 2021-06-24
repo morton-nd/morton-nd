@@ -8,21 +8,18 @@ A header-only Morton encode/decode library (C++14) capable of encoding from and 
 
 All algorithms are **generated** at compile-time for the number of dimensions and field width used. This way, loops and branches are not required.
 
-Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
+Includes a hardware-based approach (using Intel BMI2) for most Intel CPUs, as well as another fast approach based on Lookup Table (LUT) methods for other CPU variants. 
 
 ### Status
 [![Build Status](https://github.com/kevinhartman/morton-nd/actions/workflows/cmake.yml/badge.svg)](https://github.com/kevinhartman/morton-nd/actions/workflows/cmake.yml) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
-### Encoder Support
+### Encode/Decode Support
 - any number of dimensions (e.g. `2D, 3D, 4D ... ND`).
-- built-in support for up to 128-bit native results (`__uint128_t`). Unlimited using a user-supplied "big integer" class.
+- built-in support for up to 128-bit native results (`__uint128_t`). Unlimited using a user-supplied "big integer" class (not yet tested).
 - `constexpr` encode method, allowing Morton encodings to be expressed at compile-time.
-
-### Decoder Support
-- any number of dimensions (bounded by native result width of 64).
-- built-in support for decoding up to 64-bit Morton codes.
+- `constexpr` decode method, allowing Morton decodings to be expressed at compile-time.
 
 ## Encoders and Decoders
 
@@ -42,20 +39,30 @@ std::tie(f1, f2, f3, f4) = MortonND_4D::Decode(encoding);
 ```
 
 ### Lookup Table (LUT)
-Supports encoding in N dimensions, using a compiler-generated LUT-based approach.
+Supports encoding and decoding in N dimensions, using compiler-generated LUTs.
 
 LUTs are defined with constant expressions and thus can be generated (and even used) at compile-time.
 
-The encoder supports chunking, allowing a LUT smaller than the input field width to be used internally. This is useful for applications which require faster compilation times and smaller binaries (at the expense of extra bit manipulation operations required to combine chunks at runtime).
+Both the encoder and decoder support chunking, allowing a LUT smaller than the input field width when encoding, or smaller than Morton code width when decoding, to be used internally. This is useful for applications which require faster compilation times and smaller binaries (at the expense of extra bit manipulation operations required to combine chunks at runtime).
 
 See the [Morton ND LUT Usage Guide](docs/MortonND_LUT.md) for details.
 
+#### Encoding
 ```c++
 // Generates a 4D LUT encoder (4 fields, 16 bits each, 8-bit LUT) using the compiler.
-constexpr auto MortonND_4D = mortonnd::MortonNDLutEncoder<4, 16, 8>();
+constexpr auto MortonND_4D_Enc = mortonnd::MortonNDLutEncoder<4, 16, 8>();
 
 // Encodes 4 fields. Can be done at run-time or compile-time.
-auto encoding = MortonND_4D.Encode(f1, f2, f3, f4);
+auto encoding = MortonND_4D_Enc.Encode(f1, f2, f3, f4);
+```
+
+#### Decoding
+```c++
+// Generates a 4D LUT decoder (4 fields, 16 bits each, 8-bit LUT) using the compiler.
+constexpr auto MortonND_4D_Dec = mortonnd::MortonNDLutDecoder<4, 16, 8>();
+
+// Decodes 4 fields. Can be done at run-time or compile-time (just not with std::tie in C++14).
+std::tie(f1, f2, f3, f4) = MortonND_4D_Dec.Decode(encoding);
 ```
 
 ## Testing and Performance
@@ -68,7 +75,7 @@ The snippets below show performance comparisons between various 3D configuration
 
 To run these tests (and more!) on your own machine, clone the fork linked above.
 
-The following metrics (sorted by random access time, ascending) were collected on an i7-6920HQ, compiled with GCC 8.1 on macOS 10.13 using `-O3 -DNDEBUG`. Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
+The following metrics (sorted by random access time, ascending) were collected on an I9-9980HK, compiled with GCC 11.1.0 on macOS 11.1 using `-O3 -DNDEBUG`. Results include data from both linearly increasing and random inputs to demonstrate the performance impact of cache (hit or miss) under each algorithm / configuration. Results are averaged over 5 runs (each algorithm is run 5 times consecutively before moving on to the next).
 
 #### 32-bit
 ```
@@ -77,28 +84,25 @@ The following metrics (sorted by random access time, ascending) were collected o
 
     Linear      Random
     ======      ======
-    644.383 ms  621.580 ms  : 32-bit (MortonND)    LUT: 1 chunks, 10 bit LUT
-    648.476 ms  640.081 ms  : 32-bit (MortonND)    BMI2
-    651.312 ms  643.003 ms  : 32-bit (lib-morton)  BMI2 instruction set
-    740.515 ms  733.843 ms  : 32-bit (lib-morton)  LUT Shifted
-    758.591 ms  747.817 ms  : 32-bit (lib-morton)  LUT
-    788.011 ms  760.917 ms  : 32-bit (MortonND)    LUT: 2 chunks, 8 bit LUT
-    815.661 ms  801.993 ms  : 32-bit (MortonND)    LUT: 2 chunks, 5 bit LUT
-    1069.366 ms 1058.250 ms : 32-bit (lib-morton)  Magicbits
-    1696.491 ms 1689.635 ms : 32-bit (lib-morton)  For ET
-    1839.854 ms 1834.307 ms : 32-bit (lib-morton)  For
+    524.178 ms  515.768 ms : 32-bit (MortonND)    LUT: 1 chunks, 10 bit LUT
+    530.421 ms  536.726 ms : 32-bit (lib-morton)  BMI2 instruction set
+    539.061 ms  530.954 ms : 32-bit (MortonND)    BMI2
+    629.888 ms  628.029 ms : 32-bit (lib-morton)  LUT Shifted
+    647.075 ms  646.281 ms : 32-bit (MortonND)    LUT: 2 chunks, 8 bit LUT
+    658.859 ms  667.313 ms : 32-bit (MortonND)    LUT: 2 chunks, 5 bit LUT
+    668.371 ms  665.673 ms : 32-bit (lib-morton)  LUT
     
 ++ Decoding 512^3 morton codes (134217728 in total)
 
     Linear      Random
     ======      ======
-    682.018 ms  3861.763 ms : 32-bit (lib-morton)  BMI2 Instruction set
-    684.574 ms  3883.193 ms : 32-bit (MortonND)    MortonND: BMI2
-    1034.161 ms 4241.783 ms : 32-bit (lib-morton)  LUT Shifted
-    1145.437 ms 4372.682 ms : 32-bit (lib-morton)  Magicbits
-    1192.125 ms 4375.222 ms : 32-bit (lib-morton)  LUT
-    2435.355 ms 5892.361 ms : 32-bit (lib-morton)  For
-    3441.597 ms 6166.849 ms : 32-bit (lib-morton)  For ET
+    560.478 ms  3159.143 ms : 32-bit (lib-morton)  BMI2 Instruction set
+    569.632 ms  3188.762 ms : 32-bit (MortonND)    MortonND: BMI2
+    807.765 ms  3386.069 ms : 32-bit (MortonND)    LUT: 3 chunks, 10 bit LUT
+    870.854 ms  3479.404 ms : 32-bit (lib-morton)  LUT Shifted
+    902.272 ms  3516.063 ms : 32-bit (MortonND)    LUT: 4 chunks, 8 bit LUT
+    1033.880 ms 3605.081 ms : 32-bit (lib-morton)  LUT
+    1162.954 ms 3755.352 ms : 32-bit (MortonND)    LUT: 6 chunks, 5 bit LUT
 ```
 
 #### 64-bit
@@ -108,28 +112,29 @@ The following metrics (sorted by random access time, ascending) were collected o
 
     Linear      Random
     ======      ======
-    682.781 ms  676.863 ms  : 64-bit (MortonND)    BMI2
-    691.945 ms  687.623 ms  : 64-bit (lib-morton)  BMI2 instruction set
-    984.001 ms  975.855 ms  : 64-bit (MortonND)    LUT: 3 chunks, 7 bit LUT
-    762.784 ms  994.220 ms  : 64-bit (MortonND)    LUT: 2 chunks, 16 bit LUT
-    996.148 ms  994.599 ms  : 64-bit (lib-morton)  LUT Shifted
-    1067.235 ms 1064.724 ms : 64-bit (lib-morton)  LUT
-    647.497 ms  1139.275 ms : 64-bit (MortonND)    LUT: 1 chunks, 21 bit LUT
-    1287.558 ms 1284.486 ms : 64-bit (lib-morton)  Magicbits
-    3695.027 ms 3691.027 ms : 64-bit (lib-morton)  For
-    2366.875 ms 4015.031 ms : 64-bit (lib-morton)  For ET
+    524.044 ms  563.434 ms : 64-bit (lib-morton)  BMI2 instruction set
+    536.608 ms  587.632 ms : 64-bit (MortonND)    BMI2
+    632.564 ms  639.866 ms : 64-bit (MortonND)    LUT: 2 chunks, 11 bit LUT
+    812.262 ms  817.026 ms : 64-bit (MortonND)    LUT: 3 chunks, 8 bit LUT
+    812.683 ms  823.962 ms : 64-bit (MortonND)    LUT: 3 chunks, 7 bit LUT
+    828.591 ms  845.098 ms : 64-bit (lib-morton)  LUT Shifted
+    612.973 ms  863.919 ms : 64-bit (MortonND)    LUT: 2 chunks, 16 bit LUT
+    909.336 ms  929.829 ms : 64-bit (lib-morton)  LUT
+    516.114 ms 1003.164 ms : 64-bit (MortonND)    LUT: 1 chunks, 21 bit LUT
     
 ++ Decoding 512^3 morton codes (134217728 in total)
 
     Linear      Random
     ======      ======
-    679.403 ms  3819.525 ms : 64-bit (lib-morton)  BMI2 Instruction set
-    689.146 ms  3863.148 ms : 64-bit (MortonND)    BMI2
-    1338.503 ms 4600.688 ms : 64-bit (lib-morton)  Magicbits
-    1481.526 ms 4672.497 ms : 64-bit (lib-morton)  LUT Shifted
-    1748.424 ms 4974.474 ms : 64-bit (lib-morton)  LUT
-    3108.945 ms 8864.368 ms : 64-bit (lib-morton)  For ET
-    5764.171 ms 9157.460 ms : 64-bit (lib-morton)  For
+    575.827 ms  3195.522 ms : 64-bit (MortonND)    BMI2
+    560.200 ms  3204.435 ms : 64-bit (lib-morton)  BMI2 Instruction set
+    932.061 ms  3600.856 ms : 64-bit (MortonND)    LUT: 4 chunks, 16 bit LUT
+    1164.335 ms 3758.155 ms : 64-bit (MortonND)    LUT: 6 chunks, 11 bit LUT
+    1300.058 ms 3912.560 ms : 64-bit (lib-morton)  LUT Shifted
+    1518.749 ms 4144.474 ms : 64-bit (MortonND)    LUT: 9 chunks, 7 bit LUT
+    1387.119 ms 4039.352 ms : 64-bit (MortonND)    LUT: 8 chunks, 8 bit LUT
+    1564.913 ms 4150.859 ms : 64-bit (lib-morton)  LUT
+    833.821 ms  4496.993 ms : 64-bit (MortonND)    LUT: 3 chunks, 21 bit LUT
 ```
 
 ## Installation
@@ -156,7 +161,7 @@ By using `target_link_libraries(...)` as above, Morton ND's headers will be auto
 ```c++
 // main.cpp
 #include <morton-nd/mortonND_BMI2.h>
-#include <morton-nd/mortonND_LUT_encoder.h>
+#include <morton-nd/mortonND_LUT.h>
 ```
 
 ## Thanks
