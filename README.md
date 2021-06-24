@@ -11,7 +11,7 @@ All algorithms are **generated** at compile-time for the number of dimensions an
 Includes a hardware-based approach (using Intel BMI2) for newer Intel CPUs, as well as another fast approach based on the Lookup Table (LUT) method for other CPU variants. 
 
 ### Status
-[![Build Status](https://travis-ci.org/kevinhartman/morton-nd.svg?branch=master)](https://travis-ci.org/kevinhartman/morton-nd) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/kevinhartman/morton-nd/actions/workflows/cmake.yml/badge.svg)](https://github.com/kevinhartman/morton-nd/actions/workflows/cmake.yml) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
