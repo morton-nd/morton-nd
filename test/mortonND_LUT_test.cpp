@@ -26,7 +26,7 @@ template<size_t Fields, size_t Digits, size_t FieldBits = Digits / Fields>
 bool TestEncodeMortonNDLutSet() {
     std::cout << "Testing " << Digits << "-bit " << Fields << "D LUT encoders (Bits/Field = " << FieldBits << ")..." << std::endl;
 
-    // (LUT size doesn't affect the type. 1 is arbitrary.)
+    // (LUT size doesn't affect the return type. 1 is arbitrary.)
     using T = typename mortonnd::MortonNDLutEncoder<Fields, FieldBits, 1>::type;
     return TestEncodeMortonNDLutSet<FieldBits, T>(
         make_type_sequence<Fields, T>(), std::make_index_sequence<Fields>{}, std::make_index_sequence<FieldBits>{});
@@ -100,7 +100,7 @@ template<size_t Fields, size_t Digits, size_t FieldBits = Digits / Fields>
 bool TestDecodeMortonNDLutSet() {
     std::cout << "Testing " << Digits << "-bit " << Fields << "D LUT decoders (Bits/Field = " << FieldBits << ")..." << std::endl;
 
-    // (LUT size doesn't affect the type. 1 is arbitrary.)
+    // (LUT size doesn't affect the return type. 1 is arbitrary.)
     using T = typename mortonnd::MortonNDLutDecoder<Fields, FieldBits, 1>::type;
     return TestDecodeMortonNDLutSet<FieldBits, T>(
         make_type_sequence<Fields, T>(), std::make_index_sequence<Fields>{}, std::make_index_sequence<FieldBits>{});
