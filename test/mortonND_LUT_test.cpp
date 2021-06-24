@@ -1,5 +1,4 @@
-#include <morton-nd/mortonND_LUT_encoder.h>
-#include <morton-nd/mortonND_LUT_decoder.h>
+#include <morton-nd/mortonND_LUT.h>
 #include "mortonND_LUT_test.h"
 #include "mortonND_test_common.h"
 #include "variadic_placeholder.h"
