@@ -204,6 +204,9 @@ public:
      */
     static constexpr std::size_t ChunkCount = 1 + ((FieldBits - 1) / LutBits);
 
+    /**
+     * Equivalent to class template parameter 'LutBits'.
+     */
     static constexpr std::size_t LutBitsCount = LutBits;
 
     /**
@@ -455,6 +458,9 @@ public:
      */
     static constexpr std::size_t ChunkCount = MortonCodeWidth / LutBits + (MortonCodeWidth % LutBits != 0);
 
+    /**
+     * Equivalent to class template parameter 'LutBits'.
+     */
     static constexpr std::size_t LutBitsCount = LutBits;
 
     /**
