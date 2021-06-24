@@ -524,7 +524,7 @@ private:
         constexpr auto FieldStartIndex = ChunkStartBit + SourceIndex;
         constexpr auto DestIndex = FieldStartIndex % Dimensions;
         constexpr auto InsertOffset = FieldStartIndex / Dimensions;
-        std::get<DestIndex>(result) = (((T)chunkLookupResult[SourceIndex]) << InsertOffset) |((T)std::get<DestIndex>(result));
+        std::get<DestIndex>(result) = (T(chunkLookupResult[SourceIndex]) << InsertOffset) | std::get<DestIndex>(result);
     }
 
     /**
@@ -631,7 +631,7 @@ private:
 
     template <typename Array, std::size_t ...I>
     constexpr auto CreateTuple(Array arr, std::index_sequence<I...>) const {
-        return std::make_tuple((T)arr[I]...);
+        return std::make_tuple(T(arr[I])...);
     }
 
     constexpr auto DecodeInternal(T field, std::size_t) const
