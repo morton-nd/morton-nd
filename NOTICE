@@ -2,7 +2,7 @@ morton-nd - A header-only compile-time Morton encoding/decoding
             library for N dimensions.
 https://github.com/kevinhartman/morton-nd
 
-Copyright (c) 2015-2018 Kevin Hartman
+Copyright (c) Kevin Hartman
 
 Main Contributors:
   Kevin Hartman @kevinhartman <kevin@hart.mn>
