@@ -673,6 +673,66 @@ public:
     static constexpr std::size_t ChunkMask = ~std::size_t(0) >> (std::numeric_limits<std::size_t>::digits - LutBits);
     const std::array<std::array<LutValue, Dimensions>, LutSize> LookupTable = BuildLut(std::make_index_sequence<LutSize>{});
 };
+
+// Note: The below type aliases define default configurations for common use-cases,
+//       including 2D and 3D encodings that fit in 32 and 64 bit results.
+//
+//       The defaulted 'LUTBits' values attempt to reduce LUT look-up operations
+//       while keeping LUT table sizes relatively small to: take advantage of caching,
+//       keep programs small, and minimize build times.
+
+/**
+ * Type alias for a 2D encoder with 16-bit inputs, 32-bit result.
+ *
+ * Inputs must NOT use more than 16 least-significant bits.
+ */
+using MortonNDLutEncoder_2D_32 = MortonNDLutEncoder<2, 16, 8>;
+
+/**
+ * Type alias for a 2D decoder for 32-bit input, 16-bit results.
+ */
+using MortonNDLutDecoder_2D_32 = MortonNDLutDecoder<2, 16, 8>;
+
+/**
+ * Type alias for a 2D encoder with 32-bit inputs, 64-bit result.
+ *
+ * Inputs must NOT use more than 32 least-significant bits.
+ */
+using MortonNDLutEncoder_2D_64 = MortonNDLutEncoder<2, 32, 11>;
+
+/**
+ * Type alias for a 2D decoder for 64-bit input, 32-bit results.
+ */
+using MortonNDLutDecoder_2D_64 = MortonNDLutDecoder<2, 32, 11>;
+
+/**
+ * Type alias for a 3D encoder with 10-bit inputs, 30-bit result.
+ *
+ * Inputs must NOT use more than 10 least-significant bits.
+ */
+using MortonNDLutEncoder_3D_32 = MortonNDLutEncoder<3, 10, 10>;
+
+/**
+ * Type alias for a 3D decoder for 30-bit input, 10-bit results.
+ *
+ * Input must NOT use more than 30 least-significant bits.
+ */
+using MortonNDLutDecoder_3D_32 = MortonNDLutDecoder<3, 10, 10>;
+
+/**
+ * Type alias for a 3D encoder with 21-bit inputs, 63-bit result.
+ *
+ * Inputs must NOT use more than 21 least-significant bits.
+ */
+using MortonNDLutEncoder_3D_64 = MortonNDLutEncoder<3, 21, 11>;
+
+/**
+ * Type alias for a 3D decoder for 63-bit input, 21-bit results.
+ *
+ * Inputs must NOT use more than 63 least-significant bits.
+ */
+using MortonNDLutDecoder_3D_64 = MortonNDLutDecoder<3, 21, 11>;
+
 }
 
 #endif
