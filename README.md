@@ -18,8 +18,7 @@ Includes a hardware-based approach (using Intel BMI2) for most Intel CPUs, as we
 ### Encode/Decode Support
 - any number of dimensions (e.g. `2D, 3D, 4D ... ND`).
 - built-in support for up to 128-bit native results (`__uint128_t`). Unlimited using a user-supplied "big integer" class (not yet tested).
-- `constexpr` encode method, allowing Morton encodings to be expressed at compile-time.
-- `constexpr` decode method, allowing Morton decodings to be expressed at compile-time.
+- `constexpr` encoding and decoding, allowing Morton coding to be expressed at compile-time.
 
 ## Encoders and Decoders
 
@@ -43,7 +42,7 @@ Supports encoding and decoding in N dimensions, using compiler-generated LUTs.
 
 LUTs are defined with constant expressions and thus can be generated (and even used) at compile-time.
 
-Both the encoder and decoder support chunking, allowing a LUT smaller than the input field width when encoding, or smaller than Morton code width when decoding, to be used internally. This is useful for applications which require faster compilation times and smaller binaries (at the expense of extra bit manipulation operations required to combine chunks at runtime).
+Both the encoder and decoder support chunking, allowing a LUT smaller than the input field width when encoding, or smaller than the Morton code width when decoding, to be used internally. This is useful for applications which require faster compilation times and smaller binaries (at the expense of extra bit manipulation operations required to combine chunks at runtime).
 
 See the [Morton ND LUT Usage Guide](docs/MortonND_LUT.md) for details.
 
