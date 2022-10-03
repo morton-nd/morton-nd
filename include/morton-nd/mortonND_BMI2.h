@@ -8,7 +8,7 @@
 #ifndef MORTON_ND_MORTONND_BMI2_H
 #define MORTON_ND_MORTONND_BMI2_H
 
-#if defined(__BMI2__) || __AVX2__
+#if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
 #define MORTON_ND_BMI2_ENABLED 1
 
 #include <array>
