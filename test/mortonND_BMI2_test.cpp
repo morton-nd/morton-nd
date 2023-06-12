@@ -18,7 +18,10 @@ bool TestMortonNDBmiEncoder() {
 
 template<typename Ret, typename ...Fields>
 bool TestMortonNDBmiDecoder(type_sequence<Fields...>) {
-    static const auto func = std::function<std::tuple<Fields...>(Ret)>(static_cast<std::tuple<Fields...>(*)(Ret)>(mortonnd::MortonNDBmi<sizeof...(Fields), Ret>::Decode));
+    auto lambda = [](Ret x) -> std::tuple<Fields...> {
+        return mortonnd::MortonNDBmi<sizeof...(Fields), Ret>::Decode(x);
+    };
+    static const auto func = std::function<std::tuple<Fields...>(Ret)>(static_cast<std::tuple<Fields...>(*)(Ret)>(lambda));
     return TestDecodeFunction<std::numeric_limits<Ret>::digits / sizeof...(Fields)>(func);
 }
 
